@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# IELTS 雅思阅读练习平台
 
-## Getting Started
+基于 Next.js 15 的全栈雅思阅读练习网站，支持 PDF 上传解析、机考模拟、做题记录追踪。
 
-First, run the development server:
+## 技术栈
+
+- **前端 + 后端**: Next.js 15 (App Router)
+- **数据库 + 存储**: Supabase
+- **PDF 解析**: pdf-parse
+- **样式**: Tailwind CSS
+- **验证**: Zod
+- **语言**: TypeScript
+
+## 核心功能
+
+1. 用户注册/登录（Supabase Auth）
+2. 上传 PDF → 解析提取文字 → 保存到 Supabase Storage 和数据库
+3. 机考练习界面（左文章右题目，计时）
+4. 做题记录保存和查看
+5. 已上传文件列表，可重新练习
+
+## 项目结构
+
+```
+ielts-v2/
+├── app/
+│   ├── api/              # API 路由
+│   │   ├── auth/         # 认证相关
+│   │   ├── pdf/          # PDF 上传和列表
+│   │   └── practice/     # 练习提交和记录
+│   ├── auth/             # 登录注册页面
+│   ├── dashboard/        # 用户仪表盘
+│   ├── practice/[id]/    # 练习页面
+│   └── page.tsx          # 首页
+├── components/
+│   ├── layout/           # 布局组件
+│   ├── practice/         # 练习相关组件
+│   └── ui/               # UI 组件
+├── lib/
+│   ├── supabase/         # Supabase 客户端
+│   └── utils/            # 工具函数
+├── types/                # TypeScript 类型定义
+└── supabase/
+    └── schema.sql        # 数据库 schema
+```
+
+## 快速开始
+
+### 1. 安装依赖
+
+```bash
+npm install
+```
+
+### 2. 配置环境变量
+
+复制 `.env.example` 为 `.env.local`，填入你的 Supabase 配置：
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+### 3. 设置 Supabase 数据库
+
+在 Supabase SQL Editor 中执行 `supabase/schema.sql` 文件。
+
+### 4. 启动开发服务器
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+打开 [http://localhost:3000](http://localhost:3000) 查看应用。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 待实现功能（TODO）
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- [ ] 用户认证逻辑
+- [ ] PDF 上传和解析
+- [ ] 机考练习界面
+- [ ] 答案判分系统
+- [ ] 做题记录保存和展示
+- [ ] 文件列表和重做功能
 
-## Learn More
+## 部署
 
-To learn more about Next.js, take a look at the following resources:
+推荐使用 Vercel 或 Zeabur 部署。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
