@@ -20,6 +20,7 @@ export interface ParsedData {
   article: string
   questions: BackendQuestion[]
   answers: Record<string, string>
+  locations: Record<string, string>
   explanations: Record<string, string>
 }
 
@@ -66,6 +67,15 @@ export function parseSummaryText(
 export function normalizeAnswer(s: string): string {
   if (!s) return ''
   return s.trim().toUpperCase().replace(/\s+/g, ' ').replace(/[.。,，;；]/g, '')
+}
+
+/** Extract just the leading letter from a matching_list answer.
+ *  "A.Rodomiro Ortiz" → "A",  "A" → "A",  "TRUE" → "TRUE"
+ */
+export function extractLetter(s: string): string {
+  if (!s) return ''
+  const m = s.trim().toUpperCase().match(/^([A-Z])/)
+  return m ? m[1] : normalizeAnswer(s)
 }
 
 export function formatTime(seconds: number): string {
@@ -119,13 +129,27 @@ export function calculateScore(
           correct_count++
         }
       }
+    } else if (q.type === 'matching_list') {
+      const userRaw = (userAnswers[q.id] as string) ?? ''
+      const correctVal = extractLetter(correctAnswers[q.id] ?? '')
+      const opts = q.sharedOptions ?? []
+      const optLetterFn = (o: string) => o.match(/^([A-Z])[\.\s]/)?.[1] ?? ''
+      const optContentFn = (o: string) => o.replace(/^[A-Z]\.?\s+/, '')
+      // Validate: single letter, or exact content match (drag stores content only)
+      let userLetter: string | null = null
+      if (/^[A-Za-z]$/.test(userRaw.trim())) {
+        const l = userRaw.trim().toUpperCase()
+        if (opts.find(o => optLetterFn(o) === l)) userLetter = l
+      } else {
+        const contentOpt = opts.find(o => optContentFn(o).trim().toLowerCase() === userRaw.trim().toLowerCase())
+        if (contentOpt) userLetter = optLetterFn(contentOpt)
+      }
+      if (userLetter && userLetter === correctVal) correct_count++
     } else {
-      // single value types (including matching_paragraph, matching_list, fill_blank)
+      // single value types (matching_paragraph, fill_blank, choice_single, choice_judge)
       const userVal = normalizeAnswer((userAnswers[q.id] as string) ?? '')
       const correctVal = normalizeAnswer(correctAnswers[q.id] ?? '')
-      if (userVal && userVal === correctVal) {
-        correct_count++
-      }
+      if (userVal && userVal === correctVal) correct_count++
     }
   }
 

@@ -162,6 +162,7 @@ export default function PracticeClient({
             answers={answers}
             mode={mode}
             correctAnswers={parsedData.answers ?? {}}
+            locations={parsedData.locations ?? {}}
             explanations={parsedData.explanations ?? {}}
             onAnswerChange={handleAnswerChange}
           />
@@ -184,15 +185,16 @@ export default function PracticeClient({
         {mode === 'practice' ? (
           <>
             <div className="flex items-center gap-1 flex-wrap">
-              <span className="text-sm font-medium mr-1">P1</span>
+              <span className="text-xs mr-1">P1</span>
               {questionIds.map((qid) => (
                 <button
                   key={qid}
-                  className={`text-sm px-1.5 py-0.5 rounded ${
-                    answers[qid] !== undefined && answers[qid] !== ''
-                      ? 'text-black font-medium underline'
-                      : 'text-gray-500 hover:text-black'
+                  className={`text-xs px-1 py-0 ${
+                    answers[qid] !== undefined && answers[qid] !== '' && (answers[qid] as string).length > 0
+                      ? 'text-black underline'
+                      : 'text-black'
                   }`}
+                  style={{ border: 'none', background: 'none' }}
                 >
                   {qid}
                 </button>
@@ -202,13 +204,15 @@ export default function PracticeClient({
               <span className="text-lg font-mono text-gray-700">{formatTime(elapsed)}</span>
               <button
                 onClick={() => setShowConfirm(true)}
-                className="px-5 py-2 bg-black text-white rounded hover:bg-gray-800 transition-colors text-sm"
+                className="text-xs rounded px-2 py-2 transition-colors"
+                style={{ backgroundColor: 'rgb(234,234,234)', border: '0.8px solid rgb(225,225,225)', borderRadius: 4 }}
               >
                 Finish section
               </button>
               <button
                 onClick={() => setIsPaused(v => !v)}
-                className="px-5 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors text-sm"
+                className="text-xs rounded px-2 py-2 transition-colors"
+                style={{ backgroundColor: 'rgb(234,234,234)', border: '0.8px solid rgb(225,225,225)', borderRadius: 4 }}
               >
                 {isPaused ? 'Continue' : 'Pause'}
               </button>
@@ -216,7 +220,8 @@ export default function PracticeClient({
                 onClick={() => {
                   if (confirm('确认退出？当前进度不会保存。')) router.push('/dashboard')
                 }}
-                className="px-5 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors text-sm"
+                className="text-xs rounded px-2 py-2 transition-colors"
+                style={{ backgroundColor: 'rgb(234,234,234)', border: '0.8px solid rgb(225,225,225)', borderRadius: 4 }}
               >
                 Exit
               </button>

@@ -10,6 +10,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // 检查今日上传额度（每人每天最多 6 篇）
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+    const { count } = await supabase
+      .from('pdfs')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', todayStart.toISOString())
+
+    if ((count ?? 0) >= 6) {
+      return NextResponse.json(
+        { error: '今日上传额度已用完（每天最多 6 篇），明天再试吧' },
+        { status: 429 }
+      )
+    }
+
     const formData = await request.formData()
     const file = formData.get('file') as File
 
@@ -21,7 +37,8 @@ export async function POST(request: NextRequest) {
     const parseFormData = new FormData()
     parseFormData.append('file', file)
 
-    const parseResponse = await fetch('http://localhost:8000/parse', {
+    const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:8000'
+    const parseResponse = await fetch(`${backendUrl}/parse`, {
       method: 'POST',
       body: parseFormData,
     })
