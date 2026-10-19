@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getErrorMessage } from '@/lib/utils/errors'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -28,10 +29,10 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ records })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('List records error:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch records' },
+      { error: getErrorMessage(error, '练习记录读取失败') },
       { status: 500 }
     )
   }

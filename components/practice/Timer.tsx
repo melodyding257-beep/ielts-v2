@@ -1,27 +1,10 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-
 interface TimerProps {
-  startTime: number
-  onTimeUp?: () => void
+  seconds: number
 }
 
-export default function Timer({ startTime, onTimeUp }: TimerProps) {
-  const [elapsed, setElapsed] = useState(0)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = Date.now()
-      const diff = Math.floor((now - startTime) / 1000)
-      setElapsed(diff)
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [startTime])
-
-  const minutes = Math.floor(elapsed / 60)
-  const seconds = elapsed % 60
+export default function Timer({ seconds: totalSeconds }: TimerProps) {
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
 
   return (
     <span>

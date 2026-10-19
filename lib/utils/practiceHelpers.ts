@@ -1,38 +1,6 @@
-export interface BackendQuestion {
-  id: string
-  sectionTitle: string
-  direction: string
-  type:
-    | 'choice_single'
-    | 'choice_multi'
-    | 'choice_judge'
-    | 'matching_paragraph'
-    | 'matching_list'
-    | 'fill_blank'
-    | 'fill_blank_summary'
-  text: string
-  options: string[] | null
-  selectCount: number
-  sharedOptions: string[] | null
-}
+import type { BackendQuestion } from '../../types/practice'
 
-export interface ParsedData {
-  article: string
-  questions: BackendQuestion[]
-  answers: Record<string, string>
-  locations: Record<string, string>
-  explanations: Record<string, string>
-}
-
-export interface PracticeRecord {
-  id: string
-  pdf_id: string
-  answers: Record<string, string | string[]>
-  time_spent: number
-  correct_count: number | null
-  total_count: number | null
-  attempt_count: number
-}
+export type * from '../../types/practice'
 
 /** "7-8" → ["7","8"],  "37-40" → ["37","38","39","40"],  "27" → ["27"] */
 export function getSubIds(q: BackendQuestion): string[] {
@@ -43,6 +11,98 @@ export function getSubIds(q: BackendQuestion): string[] {
     return Array.from({ length: end - start + 1 }, (_, i) => String(start + i))
   }
   return [q.id]
+}
+
+/** Present an older, split summary result as one continuous exercise.
+ * This changes only the display shape; answers remain keyed by their original ids.
+ */
+export function coalesceSummaryQuestions(questions: BackendQuestion[]): BackendQuestion[] {
+  const result: BackendQuestion[] = []
+  for (let index = 0; index < questions.length;) {
+    const first = questions[index]
+    const range = first.sectionTitle?.match(/Questions?\s+(\d+)\s*[-–—]\s*(\d+)/i)
+    if (first.type !== 'fill_blank' || !range) {
+      result.push(first)
+      index++
+      continue
+    }
+
+    const firstId = Number(range[1])
+    const lastId = Number(range[2])
+    const count = lastId - firstId + 1
+    const group = questions.slice(index, index + count)
+    const sectionKey = first.sectionTitle.replace(/[–—]/g, '-').replace(/\s+/g, ' ').trim().toLowerCase()
+    if (count < 2 || count > 20 || group.length !== count ||
+        !group.every((question, offset) => question.type === 'fill_blank' &&
+          (!question.sectionTitle ||
+            question.sectionTitle.replace(/[–—]/g, '-').replace(/\s+/g, ' ').trim().toLowerCase() === sectionKey) &&
+          Number(question.id) === firstId + offset) ||
+        !group.some((question) => /\bsummary\b/i.test(question.direction ?? ''))) {
+      result.push(first)
+      index++
+      continue
+    }
+
+    const expectedIds = Array.from({ length: count }, (_, offset) => String(firstId + offset))
+    const completeFragment = group.find((question) =>
+      expectedIds.every((id) => new RegExp(`(?:^|\\D)${id}\\s*_{3,}`).test(question.text ?? ''))
+    )
+    let text = completeFragment?.text.replace(/\s+/g, ' ').trim() ?? ''
+    for (const question of group) {
+      if (completeFragment) break
+      let fragment = String(question.text ?? '').replace(/\s+/g, ' ').trim()
+      fragment = fragment.replace(new RegExp(`^${question.id}[.)]\\s*`), '')
+      if (!new RegExp(`(?:^|\\D)${question.id}\\s*_{3,}`).test(fragment) &&
+          (fragment.match(/_{3,}/g) ?? []).length === 1) {
+        fragment = fragment.replace(/_{3,}/, `${question.id} _______`)
+      }
+      if (!text) {
+        text = fragment
+        continue
+      }
+      let overlap = 0
+      for (let length = Math.min(text.length, fragment.length); length >= 16; length--) {
+        if (text.slice(-length).toLowerCase() === fragment.slice(0, length).toLowerCase()) {
+          overlap = length
+          break
+        }
+      }
+      text += ` ${fragment.slice(overlap)}`
+    }
+
+    const markers = Array.from(text.matchAll(/(\d+)\s*_{3,}/g))
+    const lastMarker = new Map<string, number>()
+    markers.forEach((marker, markerIndex) => lastMarker.set(marker[1], markerIndex))
+    let cleaned = ''
+    let cursor = 0
+    markers.forEach((marker, markerIndex) => {
+      cleaned += text.slice(cursor, marker.index)
+      if (lastMarker.get(marker[1]) === markerIndex) cleaned += `${marker[1]} _______`
+      cursor = marker.index + marker[0].length
+    })
+    cleaned = (cleaned + text.slice(cursor)).replace(/\s+/g, ' ').replace(/\s+([,.!?;:])/g, '$1').trim()
+    const foundIds = Array.from(cleaned.matchAll(/(\d+)\s*_{3,}/g), (marker) => marker[1])
+    if (foundIds.join(',') !== expectedIds.join(',')) {
+      result.push(...group)
+      index += count
+      continue
+    }
+    cleaned = parseSummaryText(cleaned)
+      .map((part) => part.before.replace(/_{3,}/g, '') + (part.id ? `${part.id} _______` : ''))
+      .join('')
+      .replace(/\s+/g, ' ')
+      .trim()
+
+    result.push({
+      ...first,
+      id: `${firstId}-${lastId}`,
+      type: 'fill_blank_summary',
+      text: cleaned,
+      contentBlocks: null,
+    })
+    index += count
+  }
+  return result
 }
 
 /** Splits fill_blank_summary text into segments with blank ids.
@@ -100,6 +160,33 @@ export function parseFillText(text: string): { before: string; after: string } {
   }
 }
 
+/**
+ * Recover one independent fill-in question when a model accidentally places
+ * several numbered blanks in the same text. Valid single-blank text is kept.
+ */
+export function isolateFillQuestionText(text: string, questionId: string): string {
+  const markerRegex = /(\d+)\s*_{3,}/g
+  const markers = Array.from(text.matchAll(markerRegex))
+  if (markers.length <= 1) return text
+
+  const targetIndex = markers.findIndex((marker) => marker[1] === questionId)
+  if (targetIndex < 0) return text
+
+  const target = markers[targetIndex]
+  const targetStart = target.index ?? 0
+  const targetEnd = targetStart + target[0].length
+  const previousEnd = targetIndex === 0
+    ? 0
+    : (markers[targetIndex - 1].index ?? 0) + markers[targetIndex - 1][0].length
+  const nextStart = targetIndex + 1 < markers.length
+    ? (markers[targetIndex + 1].index ?? text.length)
+    : text.length
+
+  const before = text.slice(previousEnd, targetStart).replace(/^[\s;•]+/, '')
+  const after = text.slice(targetEnd, nextStart).split(/[;•\n]/, 1)[0]
+  return `${before}${questionId} _______${after}`.trim()
+}
+
 export function calculateScore(
   questions: BackendQuestion[],
   userAnswers: Record<string, string | string[]>,
@@ -107,13 +194,15 @@ export function calculateScore(
 ): { correct_count: number; total_count: number } {
   const total_count = Object.keys(correctAnswers).length
   let correct_count = 0
+  const singleAnswer = (id: string) => typeof userAnswers[id] === 'string' ? userAnswers[id] : ''
 
   for (const q of questions) {
     const subIds = getSubIds(q)
 
     if (q.type === 'choice_multi') {
       // Each subId has one correct answer; user answer is a string[] on q.id
-      const userArr = (userAnswers[q.id] as string[] | undefined) ?? []
+      const value = userAnswers[q.id]
+      const userArr = Array.isArray(value) ? value : []
       const correctSet = new Set(subIds.map(sid => normalizeAnswer(correctAnswers[sid] ?? '')))
       const userSet = new Set(userArr.map(normalizeAnswer))
       if (
@@ -124,13 +213,13 @@ export function calculateScore(
       }
     } else if (q.type === 'fill_blank_summary') {
       for (const sid of subIds) {
-        const userVal = normalizeAnswer((userAnswers[sid] as string) ?? '')
+        const userVal = normalizeAnswer(singleAnswer(sid))
         if (userVal && userVal === normalizeAnswer(correctAnswers[sid] ?? '')) {
           correct_count++
         }
       }
     } else if (q.type === 'matching_list') {
-      const userRaw = (userAnswers[q.id] as string) ?? ''
+      const userRaw = singleAnswer(q.id)
       const correctVal = extractLetter(correctAnswers[q.id] ?? '')
       const opts = q.sharedOptions ?? []
       const optLetterFn = (o: string) => o.match(/^([A-Z])[\.\s]/)?.[1] ?? ''
@@ -147,7 +236,7 @@ export function calculateScore(
       if (userLetter && userLetter === correctVal) correct_count++
     } else {
       // single value types (matching_paragraph, fill_blank, choice_single, choice_judge)
-      const userVal = normalizeAnswer((userAnswers[q.id] as string) ?? '')
+      const userVal = normalizeAnswer(singleAnswer(q.id))
       const correctVal = normalizeAnswer(correctAnswers[q.id] ?? '')
       if (userVal && userVal === correctVal) correct_count++
     }

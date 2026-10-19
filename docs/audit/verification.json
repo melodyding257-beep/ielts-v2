@@ -1,0 +1,87 @@
+{
+  "date": "2026-10-13",
+  "node": "24.15.0",
+  "python": "3.13.12",
+  "next": "16.4.0",
+  "fastapi": "0.143.0",
+  "npmCleanInstall": {
+    "passed": true,
+    "command": "npm ci --ignore-scripts",
+    "packagesAdded": 370
+  },
+  "pythonCleanInstall": {
+    "passed": true,
+    "constraintsCount": 49,
+    "platform": "Windows",
+    "pipCheckPassed": true
+  },
+  "lint": {
+    "passed": true,
+    "errors": 0,
+    "warnings": 0
+  },
+  "typecheck": {
+    "passed": true
+  },
+  "productionBuild": {
+    "passed": true
+  },
+  "frontendTests": {
+    "passed": 19,
+    "failed": 0
+  },
+  "backendTests": {
+    "passed": 24,
+    "failed": 0
+  },
+  "backendFreshEnvironmentTests": {
+    "passed": 24,
+    "failed": 0
+  },
+  "developmentStartup": {
+    "passed": true,
+    "networkProbeDirectStatus": 401,
+    "networkProbeProxyStatus": 401
+  },
+  "productionStartup": {
+    "passed": true
+  },
+  "backendStartup": {
+    "passed": true,
+    "healthStatus": 200
+  },
+  "legacyBackendEntry": {
+    "passed": true
+  },
+  "pdfPreprocessingSmoke": {
+    "passed": true
+  },
+  "productionBrowserPractice": {
+    "passed": true,
+    "checks": 10
+  },
+  "browserFileList": {
+    "passed": true,
+    "checks": 3
+  },
+  "npmProductionAudit": {
+    "knownVulnerabilities": 0
+  },
+  "npmFullAudit": {
+    "highPackageEntries": 5,
+    "distinctAdvisories": 1,
+    "developmentOnly": true
+  },
+  "pythonAudit": {
+    "packages": 50,
+    "knownVulnerabilities": 0
+  },
+  "limitations": [
+    "Live model calls and real authenticated writes were not performed.",
+    "Live schema, RLS, Storage and deployment variables have not been verified.",
+    "Python TestClient emits a Starlette httpx deprecation warning.",
+    "Linux-only dependencies were not validated."
+  ],
+  "deploymentPerformed": false,
+  "remoteDatabaseChanged": false
+}

@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "checks": [
+    "HTTP failure is shown as an error instead of an empty list",
+    "retry makes a fresh request and recovers the file list",
+    "malformed success responses show a visible format error"
+  ],
+  "componentBundledFromActualSource": true,
+  "nextLinkStubbed": true,
+  "fixtureOnly": true
+}

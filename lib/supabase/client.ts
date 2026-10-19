@@ -1,9 +1,8 @@
 import { createBrowserClient } from '@supabase/ssr'
+import type { Database } from '@/types/database'
+import { getSupabaseConfig } from './config'
 
 export function createClient() {
-  // 客户端 Supabase 实例
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const { url, key } = getSupabaseConfig()
+  return createBrowserClient<Database>(url, key)
 }

@@ -4,9 +4,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRegistration } from '../registration-context'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { setRegistration } = useRegistration()
   const supabase = createClient()
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('register')
   const [name, setName] = useState('')
@@ -33,8 +35,8 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
         password,
         options: {
           data: {
@@ -45,10 +47,16 @@ export default function RegisterPage() {
 
       if (error) throw error
 
-      // 注册成功，跳转到登录页
-      router.push('/auth/login')
-    } catch (err: any) {
-      setError(err.message || '注册失败，请稍后重试')
+      // With email confirmation disabled, signup creates a session. End it so
+      // the user explicitly logs in using the prefilled form.
+      if (data.session) {
+        const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' })
+        if (signOutError) throw signOutError
+      }
+      setRegistration({ email: email.trim(), password, requiresConfirmation: !data.session })
+      router.replace('/auth/login')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '注册失败，请稍后重试')
     } finally {
       setLoading(false)
     }

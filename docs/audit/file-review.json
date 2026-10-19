@@ -1,0 +1,888 @@
+{
+  "date": "2026-10-13",
+  "workspace": "D:\\桌面\\ielts-v2",
+  "snapshotFileCount": 82,
+  "snapshotPath": "C:\\Users\\86188\\.codex\\visualizations\\2026\\10\\13\\01a13446-c0c7-77c0-a105-4ef55322487c\\ielts-v2-before-cleanup.zip",
+  "comparisonBasis": "清理前工作区快照；包含原有未提交修改，不以 Git HEAD 将既有业务改动归为本轮改动",
+  "statusCounts": {
+    "modified": 34,
+    "private configuration": 2,
+    "unchanged": 34,
+    "added": 30,
+    "generated": 2,
+    "deleted": 13,
+    "moved": 1,
+    "deleted generated file": 1,
+    "generated review manifest": 1
+  },
+  "managedDirectories": {
+    ".git": {
+      "files": 631,
+      "bytes": 1605598,
+      "MiB": 1.53,
+      "review": "Git 历史和元数据：保留，读取状态及文件差异；未压缩或清除历史对象"
+    },
+    "node_modules": {
+      "files": 21877,
+      "bytes": 459405906,
+      "MiB": 438.12,
+      "review": "第三方包：清洁安装、manifest/lock 一致性、安全审计与构建验证"
+    },
+    ".next": {
+      "files": 787,
+      "bytes": 235030128,
+      "MiB": 224.14,
+      "review": "重新生成的构建/开发产物：旧缓存已清理，最终构建和生产启动通过"
+    },
+    "backend/.venv": {
+      "files": 4949,
+      "bytes": 126314352,
+      "MiB": 120.46,
+      "review": "项目 Python 环境：版本、安装约束、依赖检查、安全审计和实际启动验证"
+    }
+  },
+  "oldCacheInventory": {
+    ".next": {
+      "files": 7113,
+      "MiB": 1242.43
+    },
+    "node_modules": {
+      "files": 21563,
+      "MiB": 419.19
+    },
+    "backendIncludingVenv": {
+      "files": 4846,
+      "MiB": 119.43
+    }
+  },
+  "generatedCleanup": {
+    "oldServiceLogsDeleted": 4,
+    "oldNextCacheDeleted": true,
+    "trackedPythonBytecodeDeleted": true
+  },
+  "files": [
+    {
+      "path": ".claude/settings.local.json",
+      "bytesBefore": 328,
+      "sha256Before": "ed99305443fc40e26803cb135f366b193255dc544ba9c9cd0653c92bbc35ea9f",
+      "statusComparedWithCleanupSnapshot": "deleted",
+      "review": "核对引用或手动用途后删除；源码快照可恢复"
+    },
+    {
+      "path": ".env.example",
+      "bytes": 432,
+      "sha256": "5935ad49900350f866a8df691bebd96ab0ee3efd76e6300451adbc5f373234d8",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "初始化示例：检查变量名称、配置作用域及无真实密钥的模板"
+    },
+    {
+      "path": ".env.local",
+      "bytes": 389,
+      "sha256": null,
+      "statusComparedWithCleanupSnapshot": "private configuration",
+      "review": "本地实际环境：检查变量职责和来源；保留 Supabase 与后端原模型配置，不输出值、不记录密钥文件哈希"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 670,
+      "sha256": "f0a95cf6ddaf7352841b9d7d85cdd4f4b841e7965d14f5a4cd2c20e1faf297b7",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "项目配置：检查工具版本、忽略规则、编译和样式设置"
+    },
+    {
+      "path": ".nvmrc",
+      "bytes": 8,
+      "sha256": "b911698dc3cf3227d34d0ad6727f1c4408791203c9665de99ab959331a1fb07d",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "项目配置：检查工具版本、忽略规则、编译和样式设置"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 679,
+      "sha256": "063098f6cb31bb44c6f8fbea25b3876de7ee1e5f7d00a50dbab506f6415eb7f0",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "开发约定：保留，Next.js 开发启动自动更新官方规则块"
+    },
+    {
+      "path": "CLAUDE.md",
+      "bytesBefore": 11,
+      "sha256Before": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+      "statusComparedWithCleanupSnapshot": "deleted",
+      "review": "核对引用或手动用途后删除；源码快照可恢复"
+    },
+    {
+      "path": "CLEANUP_PLAN.md",
+      "bytes": 9437,
+      "sha256": "1c6cb81d118ed3a66f6a969fa41354054c5a735563ab2c51edd572401c1a62ac",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "项目文档：检查与现有结构、命令和已验证结果的一致性；初始审查与原方案保留历史说明"
+    },
+    {
+      "path": "CLEANUP_RESULT.md",
+      "bytes": 9911,
+      "sha256": "0ff0831c4ea93bc105680031289db4f709e2687a95b4daca6ec284f6399d58a5",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "项目文档：检查与现有结构、命令和已验证结果的一致性；初始审查与原方案保留历史说明"
+    },
+    {
+      "path": "DEVELOPMENT_GUIDE.md",
+      "bytes": 4706,
+      "sha256": "064d60acd5eb516a18e3ce94231ba30cc2cc040b5767f6f188309a71c4420a14",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "项目文档：检查与现有结构、命令和已验证结果的一致性；初始审查与原方案保留历史说明"
+    },
+    {
+      "path": "PROJECT_AUDIT.md",
+      "bytes": 16251,
+      "sha256": "d1f1f4f502d039d9211b619974b40fab2e25541cdfe13dd109c9c20bc2b2971f",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "项目文档：检查与现有结构、命令和已验证结果的一致性；初始审查与原方案保留历史说明"
+    },
+    {
+      "path": "PROJECT_STRUCTURE.md",
+      "bytes": 4950,
+      "sha256": "301cb7cbbfa429bbd8f2c09ef717f244e0e79586357e5c03ffd5698acd81b638",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "项目文档：检查与现有结构、命令和已验证结果的一致性；初始审查与原方案保留历史说明"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5942,
+      "sha256": "9d38b374186c27c593420de226545734c59ed5ee19ee526f12d5bdc5361dc1ac",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "项目文档：检查与现有结构、命令和已验证结果的一致性；初始审查与原方案保留历史说明"
+    },
+    {
+      "path": "app/admin/parse-tests/page.tsx",
+      "bytes": 1356,
+      "sha256": "d75b06bff9f1c3cf9f37b9610a8805f0bf804a390fb474b0aca9e6f51f27d98c",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "Next.js 页面/布局入口：检查引用、数据流、类型与构建；保留页面功能"
+    },
+    {
+      "path": "app/api/auth/callback/route.ts",
+      "bytes": 520,
+      "sha256": "d0f9b2272238e04286a801d5c540317ea6dbb64c3d058f63f8343e0b337ada4b",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "Next.js API/Route Handler 入口：检查方法、认证、输入、错误和类型；保留业务路径"
+    },
+    {
+      "path": "app/api/parse-runs/route.ts",
+      "bytes": 3170,
+      "sha256": "6513751f26573c07b0dac4361183db61a32e437df4f39f672fba93f16af49000",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "Next.js API/Route Handler 入口：检查方法、认证、输入、错误和类型；保留业务路径"
+    },
+    {
+      "path": "app/api/pdf/delete/route.ts",
+      "bytes": 2373,
+      "sha256": "f68216e64622650b17e9011dd7a230fb510cc4ed9ff5cbbf59d02f05e29e9c53",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "Next.js API/Route Handler 入口：检查方法、认证、输入、错误和类型；保留业务路径"
+    },
+    {
+      "path": "app/api/pdf/list/route.ts",
+      "bytes": 936,
+      "sha256": "68c7ef4baa0b602088bf5aa24e377e88e81cbc2e4c4171cb73f5e08efc8100bd",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "Next.js API/Route Handler 入口：检查方法、认证、输入、错误和类型；保留业务路径"
+    },
+    {
+      "path": "app/api/pdf/upload/route.ts",
+      "bytes": 10155,
+      "sha256": "63f1096c7d0394735a319c50930fcf57ae2aab49d51794e83f84df74716edc91",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "Next.js API/Route Handler 入口：检查方法、认证、输入、错误和类型；保留业务路径"
+    },
+    {
+      "path": "app/api/practice/records/route.ts",
+      "bytes": 1029,
+      "sha256": "aa1c71d6349c656c9fe61f32dbbff864930c0d398bf2baba6890c6d7a491d476",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "Next.js API/Route Handler 入口：检查方法、认证、输入、错误和类型；保留业务路径"
+    },
+    {
+      "path": "app/api/practice/submit/route.ts",
+      "bytes": 2834,
+      "sha256": "01fa26127531a109d85a158d6ed696ad5fb51c051e49ff65a0b0ccd424bc9d9f",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "Next.js API/Route Handler 入口：检查方法、认证、输入、错误和类型；保留业务路径"
+    },
+    {
+      "path": "app/auth/layout.tsx",
+      "bytes": 208,
+      "sha256": "da771ddc55addd4cd521f6577cd097bdf6b26069ec5d9edd3177a4a0e25790e6",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "Next.js 页面/布局入口：检查引用、数据流、类型与构建；保留页面功能"
+    },
+    {
+      "path": "app/auth/login/page.tsx",
+      "bytes": 7045,
+      "sha256": "d004810ef83c0bdba00563942ff734bb6f365210a27392b612b723f1f1c653c2",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "Next.js 页面/布局入口：检查引用、数据流、类型与构建；保留页面功能"
+    },
+    {
+      "path": "app/auth/register/page.tsx",
+      "bytes": 7252,
+      "sha256": "5140f3eacc30bf7cf30b108c0548ce50d2c55acfbf3f47f3db7c65a17b3bc9f0",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "Next.js 页面/布局入口：检查引用、数据流、类型与构建；保留页面功能"
+    },
+    {
+      "path": "app/auth/registration-context.tsx",
+      "bytes": 927,
+      "sha256": "68cb015c1ded3c35f3670c302f2af11fca1950946783b29aeb50920af684dc07",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "Next.js 页面/布局入口：检查引用、数据流、类型与构建；保留页面功能"
+    },
+    {
+      "path": "app/auth/signout/route.ts",
+      "bytes": 281,
+      "sha256": "e3b9e095b2dedf334e84e3d84a0e1e6a66fa24f95fe5b6d0d7698e8e69cb3b72",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "Next.js API/Route Handler 入口：检查方法、认证、输入、错误和类型；保留业务路径"
+    },
+    {
+      "path": "app/dashboard/page.tsx",
+      "bytes": 2250,
+      "sha256": "1fcc7d4af0e1934e9909eafbc11109dbdac1fd67a1c2b73772f6a9215bdec71f",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "Next.js 页面/布局入口：检查引用、数据流、类型与构建；保留页面功能"
+    },
+    {
+      "path": "app/favicon.ico",
+      "bytes": 25931,
+      "sha256": "2b8ad2d33455a8f736fc3a8ebf8f0bdea8848ad4c0db48a2833bd0f9cd775932",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "框架自动引用的站点图标：保留"
+    },
+    {
+      "path": "app/globals.css",
+      "bytes": 568,
+      "sha256": "9c750e0f057bfbeefb3ec5824c9cbc2b0b2eeed4aa08c01b5cb9165847e32493",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "页面样式：检查字体、颜色与白底页面可读性"
+    },
+    {
+      "path": "app/layout.tsx",
+      "bytes": 450,
+      "sha256": "bf9f3d749e46977cafbaf20ae1449748f030f420aed7181d048b25b848ef001e",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "Next.js 页面/布局入口：检查引用、数据流、类型与构建；保留页面功能"
+    },
+    {
+      "path": "app/page.tsx",
+      "bytes": 3311,
+      "sha256": "5ea1d3291ce24f334fbf75ccb897ca3b548d536997d46795fdbc5ae035a22ac5",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "Next.js 页面/布局入口：检查引用、数据流、类型与构建；保留页面功能"
+    },
+    {
+      "path": "app/parse-test/page.tsx",
+      "bytes": 127,
+      "sha256": "8f783f4df84f04522f33a21225f81db02f686713769b20597869e0265ac96406",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "Next.js 页面/布局入口：检查引用、数据流、类型与构建；保留页面功能"
+    },
+    {
+      "path": "app/practice/[id]/PracticeClient.tsx",
+      "bytes": 13750,
+      "sha256": "598db9bc1d8ff0a85ad18ca83683979dbf986719b5db026584c8f2d4783922f2",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "Next.js 页面/布局入口：检查引用、数据流、类型与构建；保留页面功能"
+    },
+    {
+      "path": "app/practice/[id]/page.tsx",
+      "bytes": 1016,
+      "sha256": "c023fe6dac404f412aeebeb433a6023de5126dcfa01d9846f55d9f60db73dad3",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "Next.js 页面/布局入口：检查引用、数据流、类型与构建；保留页面功能"
+    },
+    {
+      "path": "backend/.env",
+      "bytes": 720,
+      "sha256": null,
+      "statusComparedWithCleanupSnapshot": "private configuration",
+      "review": "本地实际环境：检查变量职责和来源；保留 Supabase 与后端原模型配置，不输出值、不记录密钥文件哈希"
+    },
+    {
+      "path": "backend/.env.example",
+      "bytes": 376,
+      "sha256": "a31a68596aeb3dacdd390c925502dc63e8a6298158fc1dac75ce69779c34b168",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "初始化示例：检查变量名称、配置作用域及无真实密钥的模板"
+    },
+    {
+      "path": "backend/README.md",
+      "bytes": 5732,
+      "sha256": "c308d8dd72b62cb1113ac3428228577a1816787b549b7c3f39502156530d6c9b",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "项目文档：检查与现有结构、命令和已验证结果的一致性；初始审查与原方案保留历史说明"
+    },
+    {
+      "path": "backend/__init__.py",
+      "bytes": 38,
+      "sha256": "ea9e15a7e7251de241a77016dccc16d7e63c5b20c2c9c15ebc7b43494ffdd878",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "Python 解析模块：检查职责、拆分前后 AST、导入及解析回归测试"
+    },
+    {
+      "path": "backend/__pycache__/main.cpython-313.pyc",
+      "statusComparedWithCleanupSnapshot": "deleted generated file",
+      "review": "已跟踪的 Python 字节码：删除并保留忽略规则；启动器禁用生成"
+    },
+    {
+      "path": "backend/config.py",
+      "bytes": 823,
+      "sha256": "c71c3a27f76ca51847af245588f912a9d872b6a25cc14d296d68a069f6f9d66c",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "Python 解析模块：检查职责、拆分前后 AST、导入及解析回归测试"
+    },
+    {
+      "path": "backend/constraints.txt",
+      "bytes": 1144,
+      "sha256": "b2d8d230121c18607626e35dc8513ae1d87b1ec5b127889b2f4cd90c1e989c90",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "Python 安装约束：清洁安装、依赖一致性及安全审计"
+    },
+    {
+      "path": "backend/main.py",
+      "bytes": 13567,
+      "sha256": "a03510e4eb1d23d1fd0f7ec15d9d84197831f7fc35e0ae876dd3313e16cfc869",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "Python 解析模块：检查职责、拆分前后 AST、导入及解析回归测试"
+    },
+    {
+      "path": "backend/model-profiles.env.example",
+      "bytes": 762,
+      "sha256": "63e5f6dbb852f6c3964765ca358da9bc71a5fcee8d1d4881b654fc75ebdc1dc0",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "初始化示例：检查变量名称、配置作用域及无真实密钥的模板"
+    },
+    {
+      "path": "backend/normalization.py",
+      "bytes": 10016,
+      "sha256": "a40b8cf6a98efc7063e3db571ea39faeba26bea7ae1a8ace63ebba5385caa803",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "Python 解析模块：检查职责、拆分前后 AST、导入及解析回归测试"
+    },
+    {
+      "path": "backend/preprocessing.py",
+      "bytes": 3819,
+      "sha256": "f90179bd800bf6f116dcb6dc9436a1b1cecda2f8d9dab8a8c6e07b2d580a6630",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "Python 解析模块：检查职责、拆分前后 AST、导入及解析回归测试"
+    },
+    {
+      "path": "backend/prompts.py",
+      "bytes": 6752,
+      "sha256": "ed73e53949e7d4c6ac32ac87f59365791d8b0e3977f0336fd786913f60655112",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "Python 解析模块：检查职责、拆分前后 AST、导入及解析回归测试"
+    },
+    {
+      "path": "backend/providers.py",
+      "bytes": 8973,
+      "sha256": "a4b37b79c63b9c9fdb8f0cbe1f16156686769f68d1e75bc87b566f89ee677808",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "Python 解析模块：检查职责、拆分前后 AST、导入及解析回归测试"
+    },
+    {
+      "path": "backend/render.yaml",
+      "bytes": 793,
+      "sha256": "3ebd8c3b01e405bb09ef9addd51f1076693e54257fdb13c9767b830317b75b39",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "托管参考配置：检查目录、启动命令、运行时和变量；非已核实线上状态"
+    },
+    {
+      "path": "backend/requirements.txt",
+      "bytes": 173,
+      "sha256": "228cffc77466a87f3a8238c257b38897c2b6e93c44532b39fd881f5fec08af69",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "Python 安装约束：清洁安装、依赖一致性及安全审计"
+    },
+    {
+      "path": "backend/test_api.py",
+      "bytes": 2266,
+      "sha256": "a99473da86d7a32ad944ff47cf775a011e9859067c638c83f32fb359ee50c64d",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "自动化测试入口：固定模型响应和解析规则回归，不调用真实模型"
+    },
+    {
+      "path": "backend/test_kimi.py",
+      "bytesBefore": 1573,
+      "sha256Before": "346f3310020c5e9de21e543dd9cf7e95391c3b12892c95b1a3f7db9c223cbe18",
+      "statusComparedWithCleanupSnapshot": "deleted",
+      "review": "核对引用或手动用途后删除；源码快照可恢复"
+    },
+    {
+      "path": "backend/test_parser_logic.py",
+      "bytes": 13992,
+      "sha256": "7de2bae194b183718527a727df0f161b1d1d983cb651bcc651ed6182a6774c87",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "自动化测试入口：固定模型响应和解析规则回归，不调用真实模型"
+    },
+    {
+      "path": "backend/test_upload.html",
+      "bytesBefore": 12116,
+      "sha256Before": "6f3b329abd5345031d2a3476c34eb40fe14d4941d74b3511feec29bbf63079b4",
+      "statusComparedWithCleanupSnapshot": "deleted",
+      "review": "核对引用或手动用途后删除；源码快照可恢复"
+    },
+    {
+      "path": "backend/timing.py",
+      "bytes": 2889,
+      "sha256": "c35eae4a9d03d8aac277112def17311937e7e0c43c05f7200839b0dca35fbf7d",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "Python 解析模块：检查职责、拆分前后 AST、导入及解析回归测试"
+    },
+    {
+      "path": "backend/validation.py",
+      "bytes": 19712,
+      "sha256": "dfbcbb5dbca2d8b16b506bb531d52f02c0c95f1943a0dc7057977a182d6fb37a",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "Python 解析模块：检查职责、拆分前后 AST、导入及解析回归测试"
+    },
+    {
+      "path": "components/dashboard/DashboardContent.tsx",
+      "bytes": 534,
+      "sha256": "43643e29fa9a6f2858c8bd716a779465e7fa29dc60c846c13781cb70f5f2eb9f",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "业务组件：检查实际引用、数据流、错误反馈与类型；高亮、笔记和文件列表追加浏览器验证"
+    },
+    {
+      "path": "components/dashboard/FileList.tsx",
+      "bytes": 7038,
+      "sha256": "35950dd1b1015636bbe65fee8712c72b60a728f88bf5ba6b1025e2f6db191ca2",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "业务组件：检查实际引用、数据流、错误反馈与类型；高亮、笔记和文件列表追加浏览器验证"
+    },
+    {
+      "path": "components/dashboard/UploadSection.tsx",
+      "bytes": 5456,
+      "sha256": "1a911164cc1cab05d7b6c82c4cf2d498b970691af5bf195adc6f57383ab1f939",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "业务组件：检查实际引用、数据流、错误反馈与类型；高亮、笔记和文件列表追加浏览器验证"
+    },
+    {
+      "path": "components/layout/Header.tsx",
+      "bytesBefore": 377,
+      "sha256Before": "04dea80e0087aa2844203ac947ffcc7d7f82797f7d70b1236c8b2bd39410a5d4",
+      "statusComparedWithCleanupSnapshot": "deleted",
+      "review": "核对引用或手动用途后删除；源码快照可恢复"
+    },
+    {
+      "path": "components/parse/ParseRunDashboard.tsx",
+      "bytes": 11046,
+      "sha256": "ae24910b9d9dbabf78af47eaaa430c6f1defaa5e6c7baf9ae0184d9b89886d37",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "业务组件：检查实际引用、数据流、错误反馈与类型；高亮、笔记和文件列表追加浏览器验证"
+    },
+    {
+      "path": "components/parse/ParseTester.tsx",
+      "bytes": 7684,
+      "sha256": "5b18cd39f5a1a8171e6818a40a8989714c247fbc960efcce85b369de6048ffc5",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "业务组件：检查实际引用、数据流、错误反馈与类型；高亮、笔记和文件列表追加浏览器验证"
+    },
+    {
+      "path": "components/practice/NotePanel.tsx",
+      "bytes": 4192,
+      "sha256": "b846653a15d8519af3de096b5268be4c326664d40ad9f870dd3c33ab8a36d6cc",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "业务组件：检查实际引用、数据流、错误反馈与类型；高亮、笔记和文件列表追加浏览器验证"
+    },
+    {
+      "path": "components/practice/QuestionPanel.tsx",
+      "bytes": 40310,
+      "sha256": "9113ef88b1a376d226780110a6aeb2bd64f195f3bfe2bb56d7edc98b1c4aafca",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "业务组件：检查实际引用、数据流、错误反馈与类型；高亮、笔记和文件列表追加浏览器验证"
+    },
+    {
+      "path": "components/practice/ReadingPanel.tsx",
+      "bytes": 8801,
+      "sha256": "6edef0c195764a731de8e9e55e62eedae57fd67bf0bfe95b004cd1f31ec56440",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "业务组件：检查实际引用、数据流、错误反馈与类型；高亮、笔记和文件列表追加浏览器验证"
+    },
+    {
+      "path": "components/practice/Timer.tsx",
+      "bytes": 333,
+      "sha256": "647e631dc5ad0c247150e7093bc8304238b04f5309d7ae3017c499eec4435046",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "业务组件：检查实际引用、数据流、错误反馈与类型；高亮、笔记和文件列表追加浏览器验证"
+    },
+    {
+      "path": "components/ui/Button.tsx",
+      "bytesBefore": 899,
+      "sha256Before": "5d2402b1db9ad7575bd92741ccc41b3e08fdb5817ad2021b109962fac64b1540",
+      "statusComparedWithCleanupSnapshot": "deleted",
+      "review": "核对引用或手动用途后删除；源码快照可恢复"
+    },
+    {
+      "path": "components/ui/FileUpload.tsx",
+      "bytesBefore": 848,
+      "sha256Before": "6177ffb64629139aac581192ba522a09e442a0e99663c7590eaadf4e6e028218",
+      "statusComparedWithCleanupSnapshot": "deleted",
+      "review": "核对引用或手动用途后删除；源码快照可恢复"
+    },
+    {
+      "path": "docs/audit/browser-file-list.json",
+      "bytes": 324,
+      "sha256": "838ba7e9836a82385e208ba6386e223714fede060525408e00cac9f612dc1a6d",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "检查证据：记录依赖、部署、文件或固定数据验证结果"
+    },
+    {
+      "path": "docs/audit/browser-practice.json",
+      "bytes": 765,
+      "sha256": "0bc6a89aa12a425210ed908ae8c2f822dd29f4dc23dd123fb63907866528619c",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "检查证据：记录依赖、部署、文件或固定数据验证结果"
+    },
+    {
+      "path": "docs/audit/dependencies-2026-10-13.json",
+      "bytes": 17511,
+      "sha256": "b3dbef7231d10761fae269ad4a3ab87c2d1998bd0621327b8c214eb9c403b0a5",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "检查证据：记录依赖、部署、文件或固定数据验证结果"
+    },
+    {
+      "path": "docs/audit/dependencies-after-cleanup.json",
+      "bytes": 3022,
+      "sha256": "318f0b06d338c0a6e1025a18afcb83e292cc625811a428ed5f78addbc2f5a971",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "检查证据：记录依赖、部署、文件或固定数据验证结果"
+    },
+    {
+      "path": "docs/audit/dependencies-production-after-cleanup.json",
+      "bytes": 364,
+      "sha256": "8fc134d62b2201acc33a210ee7d9b6d93453854b06c01a373eb4f455e6d502fb",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "检查证据：记录依赖、部署、文件或固定数据验证结果"
+    },
+    {
+      "path": "docs/audit/deployment-2026-10-13.json",
+      "bytes": 2607,
+      "sha256": "881fe43db5c5f68fbf928e0dc34d0a2a6e27b5ae74939d0ce414408826d339e8",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "检查证据：记录依赖、部署、文件或固定数据验证结果"
+    },
+    {
+      "path": "docs/audit/file-review.json",
+      "sha256": null,
+      "statusComparedWithCleanupSnapshot": "generated review manifest",
+      "review": "本清单不记录自身哈希，避免循环引用"
+    },
+    {
+      "path": "docs/audit/local-api-smoke.json",
+      "bytes": 1029,
+      "sha256": "57e19afa0bb896613ac404933130bae272e7a28729d43f1349f13b6933327e80",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "检查证据：记录依赖、部署、文件或固定数据验证结果"
+    },
+    {
+      "path": "docs/audit/parser-refactor.json",
+      "bytes": 957,
+      "sha256": "9bcf8736569ea5839af55cee3131c4d1c8f9e86eb4f8d0d29a3abd0b604e3d2e",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "检查证据：记录依赖、部署、文件或固定数据验证结果"
+    },
+    {
+      "path": "docs/audit/python-after-cleanup.json",
+      "bytes": 2863,
+      "sha256": "53d88e5af4bfae9fce24ae216aeed74c56929bcd0c59d013cadeb9066d62a367",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "检查证据：记录依赖、部署、文件或固定数据验证结果"
+    },
+    {
+      "path": "docs/audit/python-before-cleanup.json",
+      "bytes": 69920,
+      "sha256": "3b9985390a4da783754815584249060e3a43406b712d4ae8333c365392f21976",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "检查证据：记录依赖、部署、文件或固定数据验证结果"
+    },
+    {
+      "path": "docs/audit/verification.json",
+      "bytes": 1901,
+      "sha256": "48993784872cbc5d8a2c107c246f167437b25131772396da38ce64bda78e4259",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "检查证据：记录依赖、部署、文件或固定数据验证结果"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "bytes": 502,
+      "sha256": "4d49a3de27756b2569063c6a24ab8dda04f2db00bb90e2f5ece60678a498e573",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "项目配置：检查工具版本、忽略规则、编译和样式设置"
+    },
+    {
+      "path": "lib/server/parser-config.ts",
+      "bytes": 721,
+      "sha256": "b5291694856dc0f24ba857af283be93c43f127dde59afbe2804500f935c84024",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "服务端解析配置：检查生产变量、URL 和时限；对应单元测试"
+    },
+    {
+      "path": "lib/supabase/client.ts",
+      "bytes": 274,
+      "sha256": "a7afe86903d60f1d09f2258376f515d490db9c89579669ae3d18d90c0632029a",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "Supabase 客户端：检查配置、SSR cookies、会话刷新和数据库泛型"
+    },
+    {
+      "path": "lib/supabase/config.ts",
+      "bytes": 712,
+      "sha256": "0c79edd2c38fc30d2c5860106f9a7cfb2259de1c7ec02f313117deb8b4da03cf",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "Supabase 客户端：检查配置、SSR cookies、会话刷新和数据库泛型"
+    },
+    {
+      "path": "lib/supabase/middleware.ts",
+      "bytesBefore": 1040,
+      "sha256Before": "ad33b19d66382ce58dba928748783e95f9cdaf93302b18f866f2b2c9e78399c1",
+      "statusComparedWithCleanupSnapshot": "moved",
+      "review": "Supabase 会话模块移至 proxy.ts"
+    },
+    {
+      "path": "lib/supabase/proxy.ts",
+      "bytes": 1077,
+      "sha256": "5e8cac45059ed23c410fdb55433de9ae93373688c5d9fe2e8ae3e7cd6725e7d8",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "Supabase 客户端：检查配置、SSR cookies、会话刷新和数据库泛型"
+    },
+    {
+      "path": "lib/supabase/server.ts",
+      "bytes": 796,
+      "sha256": "20a2f9068e17b835af93b15271ea650bdb21a9ce157ab48fd0b209bdfdbcbd3c",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "Supabase 客户端：检查配置、SSR cookies、会话刷新和数据库泛型"
+    },
+    {
+      "path": "lib/utils/errors.ts",
+      "bytes": 331,
+      "sha256": "f03c1b61082da9b2e25f26b58837db91b5c1eb236398689b115e516d61fc2dbf",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "业务公共函数：检查验证、判分、题目整理与高亮规则；对应行为测试"
+    },
+    {
+      "path": "lib/utils/highlights.ts",
+      "bytes": 897,
+      "sha256": "5d35661b24edb1683b0f9b5d5475e33b1f024c410448b7dd51118aec1619085f",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "业务公共函数：检查验证、判分、题目整理与高亮规则；对应行为测试"
+    },
+    {
+      "path": "lib/utils/practiceHelpers.ts",
+      "bytes": 10045,
+      "sha256": "7d5d3876c33c7717921e9d41436b891ac7af6cc65b9e12adca1618ce2d00506d",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "业务公共函数：检查验证、判分、题目整理与高亮规则；对应行为测试"
+    },
+    {
+      "path": "lib/utils/validators.ts",
+      "bytes": 456,
+      "sha256": "a426fab7c4870ee7c014c0616614610fd0e0d3bcebd6320a6409e69c446a9143",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "业务公共函数：检查验证、判分、题目整理与高亮规则；对应行为测试"
+    },
+    {
+      "path": "next-env.d.ts",
+      "bytes": 288,
+      "sha256": null,
+      "statusComparedWithCleanupSnapshot": "generated",
+      "review": "Next.js/TypeScript 自动生成的必要声明或缓存：不作为手写代码维护"
+    },
+    {
+      "path": "next.config.ts",
+      "bytes": 133,
+      "sha256": "614bce25b089c3f19b1e17a6346c74b858034040154c6621e7d35303004767cc",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "项目配置：检查工具版本、忽略规则、编译和样式设置"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 237441,
+      "sha256": "7806bd7275725c9f6bc8ebeb2417b16b9d68e492f618ec1592455c3fa89c7159",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "npm 安装锁：检查平台 optional dependencies、清洁安装及安全审计"
+    },
+    {
+      "path": "package.json",
+      "bytes": 1068,
+      "sha256": "f1a0065e32e10d98d5450ab05eff6a9e417e57f12633ef153badc5df13a036b8",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "npm 配置：检查依赖使用、脚本、Node 范围和 ESM 格式"
+    },
+    {
+      "path": "postcss.config.mjs",
+      "bytes": 94,
+      "sha256": "dfac7ac2d86d326a0e5adb024e7943c181393ed17a5fcb8f0315b24c7da6ddde",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "项目配置：检查工具版本、忽略规则、编译和样式设置"
+    },
+    {
+      "path": "proxy.ts",
+      "bytes": 320,
+      "sha256": "19c9a1c83dac73b71e3f154d7c93d5d2abab4f275d5af26ab5a6992b04e8884c",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "Next.js 16 Proxy 框架入口：会话刷新与 matcher 检查"
+    },
+    {
+      "path": "public/file.svg",
+      "bytesBefore": 391,
+      "sha256Before": "2b67812c325c199a02536cdbeea0c593a72f707d323b72ee3e08dbab06753bd4",
+      "statusComparedWithCleanupSnapshot": "deleted",
+      "review": "核对引用或手动用途后删除；源码快照可恢复"
+    },
+    {
+      "path": "public/globe.svg",
+      "bytesBefore": 1035,
+      "sha256Before": "b614b9bf183925957661ac851498fe1d8029fd43a62fbfed86f9e2624a57e7cf",
+      "statusComparedWithCleanupSnapshot": "deleted",
+      "review": "核对引用或手动用途后删除；源码快照可恢复"
+    },
+    {
+      "path": "public/next.svg",
+      "bytesBefore": 1375,
+      "sha256Before": "55995dfad6ecb4945a1e856ddca03c5e16aa5bf13fd21b4df6a74ae79357bcfc",
+      "statusComparedWithCleanupSnapshot": "deleted",
+      "review": "核对引用或手动用途后删除；源码快照可恢复"
+    },
+    {
+      "path": "public/vercel.svg",
+      "bytesBefore": 128,
+      "sha256Before": "f081337b2fee635b455b63275406a3e7f39d6a014e25ad90dab5a67e62a12ac4",
+      "statusComparedWithCleanupSnapshot": "deleted",
+      "review": "核对引用或手动用途后删除；源码快照可恢复"
+    },
+    {
+      "path": "public/window.svg",
+      "bytesBefore": 385,
+      "sha256Before": "644768c4aaeb4767bce293344eeb0c125fb804a94d801440424072202d85e3a1",
+      "statusComparedWithCleanupSnapshot": "deleted",
+      "review": "核对引用或手动用途后删除；源码快照可恢复"
+    },
+    {
+      "path": "scripts/backend.mjs",
+      "bytes": 1180,
+      "sha256": "4e44074c485984c74bc6933d2d5bc2c391d79df082550e098e3d3d7393b5da43",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "本地运行脚本：检查解释器、环境加载、代理、超时与实际启动"
+    },
+    {
+      "path": "scripts/dev.mjs",
+      "bytes": 6337,
+      "sha256": "9d3a84745c34f3d91b6c3f53e2742fa2a012f550679b530f972d6ca839ea556f",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "本地运行脚本：检查解释器、环境加载、代理、超时与实际启动"
+    },
+    {
+      "path": "scripts/environment.mjs",
+      "bytes": 1081,
+      "sha256": "e5232ab1939cf7eb58ed1aaee7914e8f2960c1fd25054a61ba4e43a5e8fa7d7b",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "本地运行脚本：检查解释器、环境加载、代理、超时与实际启动"
+    },
+    {
+      "path": "scripts/net-check.mjs",
+      "bytes": 6647,
+      "sha256": "05e005685047a9f5812996f6c59480904a1db70d5339e4bafef9f24af30f916f",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "本地运行脚本：检查解释器、环境加载、代理、超时与实际启动"
+    },
+    {
+      "path": "scripts/test-environment.mjs",
+      "bytes": 1321,
+      "sha256": "d133408c7ff49bc52d14ffabdcb33307fb0eb39380bd876d197fc9f208fbe3fc",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "前端行为测试：Node 原生测试入口，已运行验证"
+    },
+    {
+      "path": "scripts/test-highlights.mjs",
+      "bytes": 1353,
+      "sha256": "dd9b8e8fe9624605a6a062ec41140e6e8e0f45fdcb77296f9f864a36dbfe7212",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "前端行为测试：Node 原生测试入口，已运行验证"
+    },
+    {
+      "path": "scripts/test-parser-config.mjs",
+      "bytes": 1777,
+      "sha256": "5294b7cd8fc71c56a3dbde3e63b5fe0d44ad856910018a860b44e0767cafd424",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "前端行为测试：Node 原生测试入口，已运行验证"
+    },
+    {
+      "path": "scripts/test-scoring.mjs",
+      "bytes": 1166,
+      "sha256": "e1adc43cc26aa520635b6db40c19e8f1d08e14503103462b5b5c7b429e0ad324",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "前端行为测试：Node 原生测试入口，已运行验证"
+    },
+    {
+      "path": "scripts/test-summary-coalesce.mjs",
+      "bytes": 2872,
+      "sha256": "7487514757cf10dbe6d109a74a3cc71f49b8ca181bb4d783483392f1a967578c",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "前端行为测试：Node 原生测试入口，已运行验证"
+    },
+    {
+      "path": "scripts/test-validation.mjs",
+      "bytes": 1291,
+      "sha256": "6005572c1e198a7b3c1bb99dcc9ab21bf2489f19a218a4beb2505d4dc6f783d7",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "前端行为测试：Node 原生测试入口，已运行验证"
+    },
+    {
+      "path": "supabase/migrations/202609150001_parse_runs.sql",
+      "bytes": 2398,
+      "sha256": "5c4e5e9ad3ccd4e54e84e0e0136b55a2b16b9019ce29074dffd83eb539a9ed03",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "本地数据库定义：检查表、关系、索引和 RLS；未执行线上迁移"
+    },
+    {
+      "path": "supabase/schema.sql",
+      "bytes": 3744,
+      "sha256": "e7782c6be75070e527e83d918a5e25f22908f937374de5f54de66735623a0bb4",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "本地数据库定义：检查表、关系、索引和 RLS；未执行线上迁移"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 666,
+      "sha256": "be18523b23b78b6e1a876ddd107d330f0168bddf09d751b57e0b5edce69c66f3",
+      "statusComparedWithCleanupSnapshot": "unchanged",
+      "review": "项目配置：检查工具版本、忽略规则、编译和样式设置"
+    },
+    {
+      "path": "tsconfig.tsbuildinfo",
+      "bytes": 124741,
+      "sha256": null,
+      "statusComparedWithCleanupSnapshot": "generated",
+      "review": "Next.js/TypeScript 自动生成的必要声明或缓存：不作为手写代码维护"
+    },
+    {
+      "path": "types/database.ts",
+      "bytes": 4569,
+      "sha256": "a913bb853296194558d7472a54830a3fe850491d48f620867f465ff5a0c82b1e",
+      "statusComparedWithCleanupSnapshot": "modified",
+      "review": "数据契约：检查字段、多选答案、数据库关系及实际客户端接入"
+    },
+    {
+      "path": "types/index.ts",
+      "bytesBefore": 729,
+      "sha256Before": "48d5df2607ac9fdc69ee2e3ab85d20e67df1b7c5b45cc7fdf64bd0e95d71e297",
+      "statusComparedWithCleanupSnapshot": "deleted",
+      "review": "核对引用或手动用途后删除；源码快照可恢复"
+    },
+    {
+      "path": "types/practice.ts",
+      "bytes": 3749,
+      "sha256": "2b81b4b7ad84447ed158a3fd3d2558509c6519aa28ba7b3c1e770bd3ffc8b410",
+      "statusComparedWithCleanupSnapshot": "added",
+      "review": "数据契约：检查字段、多选答案、数据库关系及实际客户端接入"
+    }
+  ]
+}

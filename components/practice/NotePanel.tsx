@@ -16,16 +16,16 @@ interface NotePanelProps {
 }
 
 export default function NotePanel({ notes, onClose, onDelete, onUpdate }: NotePanelProps) {
-  const [activeNote, setActiveNote] = useState(notes[0]?.id || '')
+  const [activeNote, setActiveNote] = useState(notes.at(-1)?.id || '')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
-  const currentNote = notes.find(n => n.id === activeNote)
+  const currentNote = notes.find(n => n.id === activeNote) ?? notes.at(-1)
 
   const handleDelete = () => {
-    if (activeNote) {
-      onDelete(activeNote)
+    if (currentNote) {
+      onDelete(currentNote.id)
       setShowDeleteConfirm(false)
-      setActiveNote(notes.filter(n => n.id !== activeNote)[0]?.id || '')
+      setActiveNote(notes.filter(n => n.id !== currentNote.id).at(-1)?.id || '')
     }
   }
 
@@ -48,6 +48,14 @@ export default function NotePanel({ notes, onClose, onDelete, onUpdate }: NotePa
           </button>
         </div>
       </div>
+
+      {notes.length > 1 && (
+        <select aria-label="选择笔记" value={currentNote?.id ?? ''}
+          onChange={(event) => { setActiveNote(event.target.value); setShowDeleteConfirm(false) }}
+          className="mx-4 mt-4 rounded border border-gray-300 px-2 py-1 text-sm">
+          {notes.map((note) => <option key={note.id} value={note.id}>{note.text.slice(0, 50)}</option>)}
+        </select>
+      )}
 
       {/* 笔记内容 */}
       {currentNote ? (

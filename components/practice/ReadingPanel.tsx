@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import type { ArticleBlock, ParsedData } from '@/lib/utils/practiceHelpers'
+import { getHighlightSegments, type Highlight, type TextSelection } from '@/lib/utils/highlights'
 
 interface ReadingPanelProps {
   title: string
-  content: any
-  highlights: Array<{ id: string; text: string; color: string }>
-  notes: Array<{ id: string; text: string; content: string }>
-  onHighlight: (text: string) => void
+  content: ParsedData
+  highlights: Highlight[]
+  onHighlight: (selection: TextSelection) => void
   onNote: (text: string) => void
   onClearHighlight: (id: string) => void
 }
@@ -16,12 +17,12 @@ export default function ReadingPanel({
   title,
   content,
   highlights,
-  notes,
   onHighlight,
   onNote,
   onClearHighlight,
 }: ReadingPanelProps) {
-  const [selectedText, setSelectedText] = useState('')
+  const articleRef = useRef<HTMLDivElement>(null)
+  const [selectedText, setSelectedText] = useState<TextSelection | null>(null)
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null)
   const [contextMenuPosition, setContextMenuPosition] = useState<{ x: number; y: number } | null>(null)
   const [contextHighlightId, setContextHighlightId] = useState<string | null>(null)
@@ -29,14 +30,24 @@ export default function ReadingPanel({
   // 处理文本选择
   const handleMouseUp = () => {
     const selection = window.getSelection()
-    const text = selection?.toString().trim()
+    const root = articleRef.current
+    const range = selection?.rangeCount ? selection.getRangeAt(0) : null
+    if (!root || !range || !root.contains(range.commonAncestorContainer)) {
+      setMenuPosition(null)
+      return
+    }
+    const rawText = range.toString()
+    const text = rawText.trim()
 
     if (text && text.length > 0) {
-      const range = selection?.getRangeAt(0)
-      const rect = range?.getBoundingClientRect()
+      const rect = range.getBoundingClientRect()
 
       if (rect) {
-        setSelectedText(text)
+        const prefix = document.createRange()
+        prefix.selectNodeContents(root)
+        prefix.setEnd(range.startContainer, range.startOffset)
+        const start = prefix.toString().length + rawText.length - rawText.trimStart().length
+        setSelectedText({ text, start, end: start + text.length })
         setMenuPosition({
           x: rect.left + rect.width / 2,
           y: rect.top - 10,
@@ -54,38 +65,104 @@ export default function ReadingPanel({
     setContextHighlightId(highlightId)
   }
 
-  // 提取文章文本（使用后端解析的 article）
-  const articleText = content?.article || 'No content available'
+  const articleBlocks: ArticleBlock[] = content.articleBlocks?.length
+    ? content.articleBlocks
+    : (content.article || 'No content available')
+        .split(/\n\s*\n/)
+        .map((text) => text.trim())
+        .filter(Boolean)
+        .map((text) => ({ type: 'paragraph' as const, text }))
 
-  // 按 \n\n 分段（PDF 原始段落）
-  const paragraphs = articleText
-    .split('\n\n')
-    .map((p: string) => p.trim())
-    .filter((p: string) => p.length > 0)
+  const { offsets: blockOffsets } = articleBlocks.reduce<{ end: number; offsets: number[] }>((previous, block) => {
+    const start = previous.end + (block.type === 'bullet' ? 1 : 0)
+    const end = start + (block.label?.text?.length ?? 0) +
+      (block.runs?.length ? block.runs.reduce((sum, run) => sum + run.text.length, 0) : block.text.length)
+    return { end, offsets: [...previous.offsets, start] }
+  }, { end: 0, offsets: [] })
+
+  const renderHighlightedText = (text: string, offset: number) =>
+    getHighlightSegments(text, offset, highlights).map((segment, index) => segment.highlight ? (
+      <mark key={index} data-highlight-id={segment.highlight.id} className="bg-amber-200 text-inherit"
+        onContextMenu={(event) => handleContextMenu(event, segment.highlight!.id)}>
+        {segment.text}
+      </mark>
+    ) : <span key={index}>{segment.text}</span>)
+
+  const renderRichText = (block: ArticleBlock, offset: number) => {
+    const runs = block.runs?.length
+      ? block.runs
+      : [{ text: block.text, bold: false, italic: false, underline: false }]
+
+    return (
+      <>
+        {block.label?.text && (
+          <span
+            className={`mr-4 inline-block ${block.label.bold ? 'font-bold' : ''} ${block.label.italic ? 'italic' : ''}`}
+          >
+            {renderHighlightedText(block.label.text, offset)}
+          </span>
+        )}
+        {runs.map((run, index) => {
+          const start = offset + (block.label?.text?.length ?? 0) +
+            runs.slice(0, index).reduce((sum, previous) => sum + previous.text.length, 0)
+          return (
+          <span
+            key={`${index}-${run.text.slice(0, 12)}`}
+            className={`${run.bold ? 'font-bold' : ''} ${run.italic ? 'italic' : ''} ${run.underline ? 'underline' : ''}`}
+          >
+            {renderHighlightedText(run.text, start)}
+          </span>
+          )
+        })}
+      </>
+    )
+  }
+
+  const alignmentClass = (block: ArticleBlock) => ({
+    left: 'text-left',
+    center: 'text-center',
+    right: 'text-right',
+    justify: 'text-justify',
+  }[block.alignment ?? 'left'])
+
+  const familyClass = (block: ArticleBlock) => ({
+    serif: 'font-serif',
+    sans: 'font-sans',
+    monospace: 'font-mono',
+    unknown: '',
+  }[block.fontFamilyRole ?? 'unknown'])
 
   return (
     <div
       className="h-full overflow-y-auto p-8"
       onMouseUp={handleMouseUp}
       onClick={() => {
-        setMenuPosition(null)
+        if (!window.getSelection()?.toString().trim()) setMenuPosition(null)
         setContextMenuPosition(null)
       }}
     >
       <h1 className="text-2xl font-bold text-center mb-8">{title}</h1>
 
       <div className="prose max-w-none">
-        <div>
-          {paragraphs.map((para: string, idx: number) => (
-            <p key={idx} className="mb-6 whitespace-pre-wrap leading-7 last:mb-0">
-              {para}
-            </p>
-          ))}
+        <div ref={articleRef}>
+          {articleBlocks.map((block, idx) => {
+            const sharedClass = `${alignmentClass(block)} ${familyClass(block)}`
+            if (block.type === 'heading') {
+              return <h2 key={idx} className={`mb-3 mt-7 text-lg font-bold leading-7 first:mt-0 ${sharedClass}`}>{renderRichText(block, blockOffsets[idx])}</h2>
+            }
+            if (block.type === 'subtitle') {
+              return <p key={idx} className={`mb-6 text-lg italic leading-7 ${sharedClass}`}>{renderRichText(block, blockOffsets[idx])}</p>
+            }
+            if (block.type === 'bullet') {
+              return <div key={idx} className={`mb-3 flex items-start gap-3 leading-7 ${sharedClass}`}><span aria-hidden="true">•</span><p className="min-w-0 flex-1">{renderRichText(block, blockOffsets[idx])}</p></div>
+            }
+            return <p key={idx} className={`mb-6 whitespace-pre-wrap leading-7 last:mb-0 ${sharedClass}`}>{renderRichText(block, blockOffsets[idx])}</p>
+          })}
         </div>
       </div>
 
       {/* 选择菜单 */}
-      {menuPosition && (
+      {menuPosition && selectedText && (
         <div
           className="fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg flex"
           style={{
@@ -98,7 +175,7 @@ export default function ReadingPanel({
             className="px-4 py-2 hover:bg-gray-100 flex items-center gap-2 border-r"
             onClick={(e) => {
               e.stopPropagation()
-              onNote(selectedText)
+              onNote(selectedText.text)
               setMenuPosition(null)
             }}
           >

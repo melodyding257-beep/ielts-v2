@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "checks": [
+    "homepage and readable foreground in OS dark mode",
+    "only the second occurrence is highlighted, including the paragraph label offset",
+    "right-click removes the selected highlight",
+    "selection across bold and italic runs keeps exact text",
+    "cross-paragraph selection is highlighted at the correct offsets",
+    "bullet marker is accounted for when positioning a highlight",
+    "new note opens immediately and earlier notes remain editable",
+    "deleting one note preserves the other note",
+    "guest practice submits and scores without persisting data",
+    "retry clears answers and returns to practice"
+  ],
+  "pageErrors": [],
+  "appMode": "production",
+  "fixtureOnly": true,
+  "realModelCalled": false
+}

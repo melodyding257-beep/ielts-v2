@@ -1,0 +1,57 @@
+{
+  "passed": true,
+  "authenticated": false,
+  "realModelCalled": false,
+  "checks": [
+    {
+      "path": "/auth/login",
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/auth/register",
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/dashboard",
+      "status": 307,
+      "location": "/auth/login"
+    },
+    {
+      "path": "/api/pdf/list",
+      "status": 401,
+      "location": null
+    },
+    {
+      "path": "/api/practice/records",
+      "status": 401,
+      "location": null
+    },
+    {
+      "path": "/api/practice/submit",
+      "status": 401,
+      "location": null
+    },
+    {
+      "path": "/api/pdf/delete",
+      "status": 401,
+      "location": null
+    },
+    {
+      "path": "/api/auth/callback",
+      "status": 307,
+      "location": "http://localhost:3013/auth/login"
+    },
+    {
+      "path": "/api/pdf/upload",
+      "guest": true,
+      "status": 400
+    },
+    {
+      "path": "/api/pdf/upload",
+      "guest": false,
+      "status": 401
+    }
+  ]
+}

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { getErrorMessage } from '@/lib/utils/errors'
 
 interface PdfFile {
   id: string
@@ -16,25 +17,47 @@ interface PracticeRecordSummary {
   attempt_count: number
 }
 
-export default function FileList() {
-  const [pdfs, setPdfs] = useState<PdfFile[]>([])
-  const [recordMap, setRecordMap] = useState<Map<string, PracticeRecordSummary>>(new Map())
-  const [loading, setLoading] = useState(true)
+interface FileListProps {
+  refreshKey: number
+}
+
+export default function FileList({ refreshKey }: FileListProps) {
+  const [retryVersion, setRetryVersion] = useState(0)
+  const requestKey = `${refreshKey}:${retryVersion}`
+  const [loaded, setLoaded] = useState<{
+    key: string | null
+    pdfs: PdfFile[]
+    recordMap: Map<string, PracticeRecordSummary>
+    error: string
+  }>({ key: null, pdfs: [], recordMap: new Map(), error: '' })
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const loading = loaded.key !== requestKey
+  const { pdfs, recordMap, error } = loaded
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/pdf/list').then(r => r.json()),
-      fetch('/api/practice/records').then(r => r.json()),
-    ]).then(([pdfData, recData]) => {
-      setPdfs(pdfData.pdfs ?? [])
-      const map = new Map<string, PracticeRecordSummary>()
-      for (const rec of recData.records ?? []) {
-        map.set(rec.pdf_id, rec)
-      }
-      setRecordMap(map)
-    }).catch(console.error).finally(() => setLoading(false))
-  }, [])
+    const controller = new AbortController()
+    const fetchList = async (url: string) => {
+      const response = await fetch(url, { signal: controller.signal })
+      const data = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(getErrorMessage(data?.error, '读取文件或练习记录失败，请重试'))
+      return data
+    }
+    Promise.all([fetchList('/api/pdf/list'), fetchList('/api/practice/records')])
+      .then(([pdfData, recData]) => {
+        if (controller.signal.aborted) return
+        if (!Array.isArray(pdfData?.pdfs) || !Array.isArray(recData?.records)) {
+          throw new Error('返回的文件或练习记录格式无效，请重试')
+        }
+        const map = new Map<string, PracticeRecordSummary>()
+        for (const record of recData.records) map.set(record.pdf_id, record)
+        setLoaded({ key: requestKey, pdfs: pdfData.pdfs, recordMap: map, error: '' })
+      })
+      .catch((cause: unknown) => {
+        if (controller.signal.aborted) return
+        setLoaded({ key: requestKey, pdfs: [], recordMap: new Map(), error: getErrorMessage(cause) })
+      })
+    return () => controller.abort()
+  }, [requestKey])
 
   const handleDelete = async (e: React.MouseEvent, pdfId: string, fileName: string) => {
     e.preventDefault()
@@ -49,7 +72,7 @@ export default function FileList() {
         body: JSON.stringify({ pdfId }),
       })
       if (res.ok) {
-        setPdfs(prev => prev.filter(p => p.id !== pdfId))
+        setLoaded(prev => ({ ...prev, pdfs: prev.pdfs.filter(p => p.id !== pdfId) }))
       } else {
         const data = await res.json()
         alert(data.error || '删除失败，请重试')
@@ -63,6 +86,13 @@ export default function FileList() {
 
   if (loading) {
     return <div className="text-center py-12 text-gray-400 text-sm">加载中…</div>
+  }
+
+  if (error) {
+    return <div role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+      <p>{error}</p>
+      <button onClick={() => setRetryVersion(version => version + 1)} className="mt-2 underline">重新加载</button>
+    </div>
   }
 
   if (pdfs.length === 0) {
@@ -95,11 +125,15 @@ export default function FileList() {
               {/* practice status */}
               {rec ? (
                 <div className="space-y-0.5">
-                  <div className="flex items-center gap-1 text-xs text-green-700">
+                  <div className={`flex items-center gap-1 text-xs ${rec.total_count === null ? 'text-amber-700' : 'text-green-700'}`}>
                     <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
-                    <span>正确 {rec.correct_count ?? '—'} / {rec.total_count ?? '—'}</span>
+                    <span>
+                      {rec.total_count === null
+                        ? '无答案 · 已保存作答'
+                        : `正确 ${rec.correct_count ?? '—'} / ${rec.total_count}`}
+                    </span>
                   </div>
                   <p className="text-xs text-gray-400">已练习 {rec.attempt_count} 次</p>
                 </div>

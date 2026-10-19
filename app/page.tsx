@@ -2,17 +2,14 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import UploadSection from '@/components/dashboard/UploadSection'
+import PracticeClient from './practice/[id]/PracticeClient'
+import type { ParsedData } from '@/lib/utils/practiceHelpers'
 
 export default function Home() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [parsed, setParsed] = useState<{ data: ParsedData; fileName: string } | null>(null)
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setSelectedFile(file)
-      // TODO: 上传文件逻辑
-    }
-  }
+  if (parsed) return <PracticeClient pdfId="guest" fileName={parsed.fileName} parsedData={parsed.data} initialRecord={null} guestMode onExit={() => setParsed(null)} />
 
   return (
     <div className="min-h-screen bg-white">
@@ -52,30 +49,7 @@ export default function Home() {
         </div>
 
         {/* 上传区域 */}
-        <div className="border-2 border-dashed border-gray-300 rounded-xl p-16 text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-semibold mb-2">上传练习材料</h3>
-          <p className="text-gray-500 mb-6">支持 PDF 和图片格式（JPG, PNG）</p>
-          <input
-            type="file"
-            accept=".pdf,image/*"
-            onChange={handleFileSelect}
-            className="hidden"
-            id="file-upload"
-          />
-          <label
-            htmlFor="file-upload"
-            className="inline-block px-8 py-3 bg-black text-white rounded-lg cursor-pointer hover:bg-gray-800 transition-colors"
-          >
-            选择文件
-          </label>
-          <p className="text-sm text-gray-400 mt-4">或拖拽文件到此区域</p>
-        </div>
-
+        <UploadSection guestMode onUploadSuccess={() => {}} onParsed={(data, fileName) => setParsed({ data, fileName })} />
         {/* 游客模式提醒 */}
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
           <svg className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">

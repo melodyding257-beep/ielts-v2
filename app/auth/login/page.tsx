@@ -2,18 +2,29 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRegistration } from '../registration-context'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { registration, setRegistration } = useRegistration()
   const supabase = createClient()
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState(registration?.email ?? '')
+  const [password, setPassword] = useState(registration?.password ?? '')
+  const [registrationMessage] = useState(registration
+    ? registration.requiresConfirmation
+      ? '账户已提交注册，但目前仍需邮箱确认，请联系管理员开启免邮箱确认登录。'
+      : '注册成功，邮箱和密码已填好，点击登录即可。'
+    : '')
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    setRegistration(null)
+  }, [setRegistration])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,7 +33,7 @@ export default function LoginPage() {
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       })
 
@@ -30,8 +41,10 @@ export default function LoginPage() {
 
       router.push('/dashboard')
       router.refresh()
-    } catch (err: any) {
-      setError(err.message || '登录失败，请检查邮箱和密码')
+    } catch (err: unknown) {
+      setError(err instanceof Error && 'code' in err && err.code === 'email_not_confirmed'
+        ? '此账户尚未完成邮箱确认，请联系管理员开启免邮箱确认登录。'
+        : err instanceof Error ? err.message : '登录失败，请检查邮箱和密码')
     } finally {
       setLoading(false)
     }
@@ -81,6 +94,11 @@ export default function LoginPage() {
 
         {/* 登录表单 */}
         <form onSubmit={handleLogin} className="space-y-5">
+          {registrationMessage && !error && (
+            <div role="status" className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
+              {registrationMessage}
+            </div>
+          )}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
               {error}
@@ -93,6 +111,7 @@ export default function LoginPage() {
             </label>
             <input
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
@@ -107,6 +126,7 @@ export default function LoginPage() {
             </label>
             <input
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"

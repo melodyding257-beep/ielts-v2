@@ -1,19 +1,22 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Timer from '@/components/practice/Timer'
 import ReadingPanel from '@/components/practice/ReadingPanel'
 import QuestionPanel from '@/components/practice/QuestionPanel'
 import NotePanel from '@/components/practice/NotePanel'
 import type { ParsedData, PracticeRecord } from '@/lib/utils/practiceHelpers'
-import { formatTime } from '@/lib/utils/practiceHelpers'
+import { calculateScore, formatTime, getSubIds } from '@/lib/utils/practiceHelpers'
+import type { Highlight } from '@/lib/utils/highlights'
 
 interface PracticeClientProps {
   pdfId: string
   fileName: string
   parsedData: ParsedData
   initialRecord: PracticeRecord | null
+  guestMode?: boolean
+  onExit?: () => void
 }
 
 export default function PracticeClient({
@@ -21,40 +24,35 @@ export default function PracticeClient({
   fileName,
   parsedData,
   initialRecord,
+  guestMode = false,
+  onExit,
 }: PracticeClientProps) {
   const router = useRouter()
-  const [mode, setMode] = useState<'practice' | 'review'>(
-    initialRecord ? 'review' : 'practice'
+  const hasAnswerKey = parsedData.answerStatus
+    ? parsedData.answerStatus === 'complete'
+    : Object.keys(parsedData.answers ?? {}).length > 0
+  const [mode, setMode] = useState<'practice' | 'review' | 'submitted'>(
+    initialRecord ? (hasAnswerKey ? 'review' : 'submitted') : 'practice'
   )
   const [answers, setAnswers] = useState<Record<string, string | string[]>>(
     initialRecord?.answers ?? {}
   )
-  const [record, setRecord] = useState<PracticeRecord | null>(initialRecord)
-  const [startTime, setStartTime] = useState(Date.now())
+  const [record, setRecord] = useState<Pick<PracticeRecord, 'answers' | 'time_spent' | 'correct_count' | 'total_count' | 'attempt_count'> | null>(initialRecord)
   const [elapsed, setElapsed] = useState(initialRecord?.time_spent ?? 0)
   const [isPaused, setIsPaused] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [showNotePanel, setShowNotePanel] = useState(false)
-  const [highlights, setHighlights] = useState<Array<{ id: string; text: string; color: string }>>([])
+  const [highlights, setHighlights] = useState<Highlight[]>([])
   const [notes, setNotes] = useState<Array<{ id: string; text: string; content: string }>>([])
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
   useEffect(() => {
-    if (mode === 'practice' && !isPaused) {
-      timerRef.current = setInterval(() => {
-        setElapsed(Math.floor((Date.now() - startTime) / 1000))
-      }, 1000)
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current)
-      // when pausing, lock in the elapsed time so it resumes correctly
-      if (isPaused) setStartTime(Date.now() - elapsed * 1000)
-    }
-    return () => { if (timerRef.current) clearInterval(timerRef.current) }
-  }, [mode, startTime, isPaused])
+    if (mode !== 'practice' || isPaused) return
+    const interval = setInterval(() => setElapsed((current) => current + 1), 1000)
+    return () => clearInterval(interval)
+  }, [mode, isPaused])
 
-  const questionIds = Object.keys(parsedData.answers ?? {})
+  const questionIds = Array.from(new Set((parsedData.questions ?? []).flatMap(getSubIds)))
 
   const handleAnswerChange = (id: string, value: string | string[]) => {
     setAnswers(prev => ({ ...prev, [id]: value }))
@@ -64,6 +62,15 @@ export default function PracticeClient({
     setSubmitting(true)
     setSubmitError('')
     try {
+      if (guestMode) {
+        const scoring = hasAnswerKey
+          ? calculateScore(parsedData.questions ?? [], answers, parsedData.answers ?? {})
+          : { correct_count: null, total_count: null }
+        setRecord({ answers, time_spent: elapsed, ...scoring, attempt_count: (record?.attempt_count ?? 0) + 1 })
+        setShowConfirm(false)
+        setMode(hasAnswerKey ? 'review' : 'submitted')
+        return
+      }
       const res = await fetch('/api/practice/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -73,7 +80,7 @@ export default function PracticeClient({
       if (res.ok) {
         setRecord(data.record)
         setShowConfirm(false)
-        setMode('review')
+        setMode(hasAnswerKey ? 'review' : 'submitted')
       } else {
         setSubmitError(data.error || '提交失败，请重试')
       }
@@ -87,9 +94,17 @@ export default function PracticeClient({
 
   const handleRetry = () => {
     setAnswers({})
-    setStartTime(Date.now())
     setElapsed(0)
     setMode('practice')
+  }
+
+  const handleExit = () => {
+    if (guestMode) {
+      if (onExit) onExit()
+      else router.push('/')
+      return
+    }
+    router.push('/dashboard')
   }
 
   return (
@@ -98,13 +113,18 @@ export default function PracticeClient({
       <header className="border-b border-gray-200 px-6 py-3 flex items-center justify-between shrink-0">
         <div className="text-sm text-gray-600">
           {mode === 'practice' ? (
-            <Timer startTime={startTime} />
+            <Timer seconds={elapsed} />
           ) : (
             <span className="text-gray-400 italic">已提交</span>
           )}
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500">Saved</span>
+          {!hasAnswerKey && (
+            <span className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
+              无答案
+            </span>
+          )}
+          <span className="text-sm text-gray-500">{guestMode ? '游客模式 · 不保存' : mode === 'practice' ? '练习中 · 提交后保存' : '作答已保存'}</span>
           {/* wifi */}
           <button className="p-2 hover:bg-gray-100 rounded" tabIndex={-1}>
             <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,13 +162,12 @@ export default function PracticeClient({
             title={fileName}
             content={parsedData}
             highlights={highlights}
-            notes={notes}
-            onHighlight={(text) => {
-              const id = Date.now().toString()
-              setHighlights(prev => [...prev, { id, text, color: 'brown' }])
+            onHighlight={(selection) => {
+              const id = crypto.randomUUID()
+              setHighlights(prev => [...prev, { id, ...selection, color: 'brown' }])
             }}
             onNote={(text) => {
-              const id = Date.now().toString()
+              const id = crypto.randomUUID()
               setNotes(prev => [...prev, { id, text, content: '' }])
               setShowNotePanel(true)
             }}
@@ -170,6 +189,7 @@ export default function PracticeClient({
 
         {showNotePanel && (
           <NotePanel
+            key={notes.at(-1)?.id ?? 'empty'}
             notes={notes}
             onClose={() => setShowNotePanel(false)}
             onDelete={(id) => setNotes(prev => prev.filter(n => n.id !== id))}
@@ -218,7 +238,7 @@ export default function PracticeClient({
               </button>
               <button
                 onClick={() => {
-                  if (confirm('确认退出？当前进度不会保存。')) router.push('/dashboard')
+                  if (confirm('确认退出？当前进度不会保存。')) handleExit()
                 }}
                 className="text-xs rounded px-2 py-2 transition-colors"
                 style={{ backgroundColor: 'rgb(234,234,234)', border: '0.8px solid rgb(225,225,225)', borderRadius: 4 }}
@@ -230,17 +250,23 @@ export default function PracticeClient({
         ) : (
           <div className="w-full flex items-center justify-between">
             <div className="flex items-center gap-6 text-sm text-gray-700">
-              <span>
-                正确题数：
-                <span className="font-semibold text-green-700">
-                  {record?.correct_count ?? '—'} / {record?.total_count ?? '—'}
+              {hasAnswerKey ? (
+                <span>
+                  正确题数：
+                  <span className="font-semibold text-green-700">
+                    {record?.correct_count ?? '—'} / {record?.total_count ?? '—'}
+                  </span>
                 </span>
-              </span>
+              ) : (
+                <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-800">
+                  {guestMode ? '上传材料没有答案，无法自动批改；本次作答不会保存' : '无答案：已保存作答，无法自动评分'}
+                </span>
+              )}
               <span>
                 用时：<span className="font-semibold">{formatTime(record?.time_spent ?? 0)}</span>
               </span>
               <span>
-                提交记录：第 <span className="font-semibold">{record?.attempt_count ?? 1}</span> 次
+                {guestMode ? '本次练习' : '提交记录'}：第 <span className="font-semibold">{record?.attempt_count ?? 1}</span> 次
               </span>
             </div>
             <div className="flex items-center gap-3">
@@ -251,7 +277,7 @@ export default function PracticeClient({
                 再练一次
               </button>
               <button
-                onClick={() => router.push('/dashboard')}
+                onClick={handleExit}
                 className="px-5 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors text-sm"
               >
                 退出
@@ -266,7 +292,13 @@ export default function PracticeClient({
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full mx-4">
             <h3 className="text-lg font-semibold mb-2">确认提交？</h3>
-            <p className="text-gray-600 text-sm mb-6">提交后将进入答案查看模式，无法继续作答。</p>
+            <p className="text-gray-600 text-sm mb-6">
+              {hasAnswerKey
+                ? '提交后将进入答案查看模式，无法继续作答。'
+                : guestMode
+                  ? '该文件没有答案，提交后无法自动批改；本次作答和用时不会保存。'
+                  : '该文件没有答案。提交后会保存你的作答和用时，但不会自动评分。'}
+            </p>
             {submitError && (
               <p className="text-red-600 text-sm mb-4">{submitError}</p>
             )}

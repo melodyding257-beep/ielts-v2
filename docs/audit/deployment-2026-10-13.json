@@ -1,0 +1,95 @@
+{
+  "base": "https://ielts-v2-8w12.vercel.app",
+  "method": "GET",
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "server": "Vercel",
+      "poweredBy": null,
+      "location": null,
+      "title": "Create Next App",
+      "error": null,
+      "bodyBytes": 10283,
+      "visibleText": "Create Next App IELTS Reading Practice · 雅思阅读机考平台 游客模式 未登录 立即登录 开始新的练习 上传 PDF 或图片文件开始练习 上传练习材料 支持 PDF 和图片格式（JPG, PNG） 选择文件 或拖拽文件到此区域 游客模式提醒 当前为游客模式，做题记录和上传文件不会被保存。 立即登录"
+    },
+    {
+      "path": "/auth/login",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "server": "Vercel",
+      "poweredBy": null,
+      "location": null,
+      "title": "Create Next App",
+      "error": null,
+      "bodyBytes": 11377
+    },
+    {
+      "path": "/api/pdf/list",
+      "status": 401,
+      "contentType": "application/json",
+      "server": "Vercel",
+      "poweredBy": null,
+      "location": null,
+      "title": null,
+      "error": null,
+      "bodyBytes": 24
+    },
+    {
+      "path": "/api/pdf/upload",
+      "status": 405,
+      "contentType": null,
+      "server": "Vercel",
+      "poweredBy": null,
+      "location": null,
+      "title": null,
+      "error": null,
+      "bodyBytes": 0
+    },
+    {
+      "path": "/parse-test",
+      "status": 404,
+      "contentType": "text/html; charset=utf-8",
+      "server": "Vercel",
+      "poweredBy": null,
+      "location": null,
+      "title": "404: This page could not be found.",
+      "error": null,
+      "bodyBytes": 8923
+    },
+    {
+      "path": "/openapi.json",
+      "status": 404,
+      "contentType": "text/html; charset=utf-8",
+      "server": "Vercel",
+      "poweredBy": null,
+      "location": null,
+      "title": "404: This page could not be found.",
+      "error": null,
+      "bodyBytes": 8923
+    },
+    {
+      "path": "/docs",
+      "status": 404,
+      "contentType": "text/html; charset=utf-8",
+      "server": "Vercel",
+      "poweredBy": null,
+      "location": null,
+      "title": "404: This page could not be found.",
+      "error": null,
+      "bodyBytes": 8923
+    },
+    {
+      "path": "/parse",
+      "status": 404,
+      "contentType": "text/html; charset=utf-8",
+      "server": "Vercel",
+      "poweredBy": null,
+      "location": null,
+      "title": "404: This page could not be found.",
+      "error": null,
+      "bodyBytes": 8923
+    }
+  ]
+}

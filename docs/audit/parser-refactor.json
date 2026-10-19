@@ -1,0 +1,37 @@
+{
+  "promptUnchanged": true,
+  "unchangedFunctions": [
+    "ParseRequestTimingMiddleware",
+    "get_active_model_profile",
+    "_now_ms",
+    "_log_step",
+    "_json_from_model_text",
+    "_dashscope_response_text",
+    "call_active_model",
+    "_extract_native_spans",
+    "process_pdf_bytes",
+    "process_image_bytes",
+    "normalize_question_id",
+    "expand_question_id",
+    "_normalize_runs",
+    "normalize_article_blocks",
+    "normalize_parsed_output",
+    "_expected_answer_ids",
+    "_native_label_candidates",
+    "validate_parsed_output",
+    "_repair_scope",
+    "_repair_prompt",
+    "_merge_repair",
+    "_hash_uploads",
+    "parse_file",
+    "root"
+  ],
+  "changedFunctions": [
+    "call_doubao",
+    "call_qwen_dashscope"
+  ],
+  "removedFunctions": [
+    "_config_summary"
+  ],
+  "notes": "Removed startup key-fragment diagnostics. Provider JSON errors now log output length instead of model text."
+}

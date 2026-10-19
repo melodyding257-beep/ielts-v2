@@ -1,20 +1,27 @@
-from fastapi import FastAPI, File, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
-import fitz  # PyMuPDF
-from typing import Dict
-import os
-import base64
-import httpx
-import json
-import re
-from dotenv import load_dotenv
+from __future__ import annotations
 
-load_dotenv()
+import json
+import sys
+import time
+from pathlib import Path
+from typing import Any, Dict
+
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+
+# Support both existing `uvicorn main:app` from backend/ and package startup.
+if not __package__:
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from backend.config import ALLOWED_ORIGINS, MAX_PAGES, PARSER_PROFILE, PARSER_VERSION, PROMPT_VERSION
+from backend.normalization import normalize_parsed_output
+from backend.preprocessing import process_image_bytes, process_pdf_bytes
+from backend.prompts import PARSE_PROMPT
+from backend.providers import call_active_model, get_active_model_profile
+from backend.timing import ParseRequestTimingMiddleware, _log_step, _now_ms, logger
+from backend.validation import _hash_uploads, _merge_repair, _repair_prompt, _repair_scope, validate_parsed_output
 
 app = FastAPI()
-
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -22,233 +29,274 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-DOUBAO_API_KEY = os.getenv("DOUBAO_API_KEY")
-DOUBAO_ENDPOINT = os.getenv("DOUBAO_ENDPOINT")
-DOUBAO_API_URL = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
-
-PARSE_PROMPT = """你是一个雅思阅读题目解析助手。下面提供的内容是一份雅思阅读练习材料，可能包含电子版文字和扫描页图片，请整合所有信息后，严格按照以下JSON格式输出，禁止输出任何其他内容：
-
-{
-  "article": "文章正文全文",
-  "questions": [
-    {
-      "id": "27",
-      "sectionTitle": "Questions 27-32",
-      "direction": "题组说明文字",
-      "type": "题目类型",
-      "text": "题目文字",
-      "options": ["选项A", "选项B"],
-      "selectCount": 1,
-      "sharedOptions": null
-    }
-  ],
-  "answers": {
-    "27": "A",
-    "28": "B"
-  },
-  "locations": {
-    "27": "A段末：\"原文定位句...\"",
-    "28": "E段中部：\"原文定位句...\""
-  },
-  "explanations": {
-    "27": "解析文字",
-    "28": "解析文字"
-  }
-}
-
-type字段规则：
-- choice_single：单选题（Choose the correct letter A/B/C/D）
-- choice_multi：多选题（Choose TWO/THREE letters）
-- choice_judge：判断题（TRUE/FALSE/NOT GIVEN 或 YES/NO/NOT GIVEN）
-- matching_paragraph：段落匹配题（Which paragraph contains...），options字段填段落字母列表如["A","B","C","D","E","F"]
-- matching_list：列表匹配题（Match each statement...），sharedOptions字段填公用选项列表，options为null
-- fill_blank：独立问句填空题（Answer the questions below / NO MORE THAN X WORDS）
-- fill_blank_summary：摘要填空题（Complete the summary），text字段保留完整段落含37 _______ 格式，id用题号范围如"37-40"
-
-注意：
-- 如果材料中没有答案解析，answers、locations和explanations返回空对象{}
-- locations填每道题的原文定位，格式为"X段Y处：\"原文关键句\""
-- article只包含文章正文，不包含题目
-- 段落匹配题的options根据direction中的字母范围生成，如A-H则为["A","B","C","D","E","F","G","H"]
-- 判断题options固定为["TRUE","FALSE","NOT GIVEN"]或["YES","NO","NOT GIVEN"]
-- 选择题options格式为["A. 选项内容", "B. 选项内容"]
-- 多选题id用题号范围如"7-8"，selectCount填2或3
-"""
-
-
-async def call_doubao(text_parts: list[str], image_parts: list[bytes]) -> dict:
-    """调用豆包模型，传入文字和图片，返回解析后的JSON"""
-    
-    if not DOUBAO_API_KEY or not DOUBAO_ENDPOINT:
-        raise ValueError("DOUBAO_API_KEY or DOUBAO_ENDPOINT not set")
-
-    # 组装content
-    content = []
-    
-    # 先放文字部分
-    if text_parts:
-        combined_text = PARSE_PROMPT + "\n\n【电子版文字内容】\n" + "\n\n---页面分隔---\n\n".join(text_parts)
-        content.append({"type": "text", "text": combined_text})
-    else:
-        content.append({"type": "text", "text": PARSE_PROMPT})
-
-    # 再放图片部分（每批最多10张）
-    for img_bytes in image_parts[:10]:
-        img_b64 = base64.b64encode(img_bytes).decode('utf-8')
-        content.append({
-            "type": "image_url",
-            "image_url": {"url": f"data:image/png;base64,{img_b64}"}
-        })
-
-    # 如果图片超过10张，分批处理（简单处理：只取前10张，实际可扩展）
-    if len(image_parts) > 10:
-        print(f"Warning: {len(image_parts)} images, only first 10 will be processed")
-
-    try:
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            response = await client.post(
-                DOUBAO_API_URL,
-                headers={
-                    "Authorization": f"Bearer {DOUBAO_API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": DOUBAO_ENDPOINT,
-                    "messages": [{"role": "user", "content": content}],
-                    "temperature": 0.2,
-                    "max_tokens": 8000,
-                    "extra_body": {"reasoning_effort": "minimal"}
-                }
-            )
-            
-            if response.status_code != 200:
-                print(f"Doubao API error: {response.status_code}, {response.text[:500]}")
-                return {}
-                
-            result = response.json()
-            raw_text = result.get("choices", [{}])[0].get("message", {}).get("content", "")
-            
-            # 清理markdown代码块
-            raw_text = re.sub(r'^```json\s*', '', raw_text.strip())
-            raw_text = re.sub(r'\s*```$', '', raw_text.strip())
-            
-            return json.loads(raw_text)
-            
-    except json.JSONDecodeError as e:
-        print(f"JSON parse error: {e}")
-        print(f"Raw response: {raw_text[:1000]}")
-        # 尝试提取JSON块
-        json_match = re.search(r'\{.*\}', raw_text, re.DOTALL)
-        if json_match:
-            try:
-                return json.loads(json_match.group())
-            except:
-                pass
-        return {}
-    except Exception as e:
-        print(f"Doubao call error: {type(e).__name__}: {str(e)}")
-        return {}
-
-
-async def process_pdf(pdf_bytes: bytes) -> tuple[list, dict]:
-    """处理PDF文件，返回pages列表和解析结果"""
-    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-    
-    pages = []
-    text_parts = []
-    image_parts = []
-    image_page_nums = []
-
-    for page_num in range(len(doc)):
-        page = doc[page_num]
-        text = page.get_text()
-        is_scan = len(text.strip()) <= 100
-
-        if is_scan:
-            # 扫描页转图片
-            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
-            img_bytes = pix.tobytes("png")
-            image_parts.append(img_bytes)
-            image_page_nums.append(page_num + 1)
-            pages.append({
-                "page_num": page_num + 1,
-                "text": "",
-                "is_scan": True,
-                "ocr_used": True
-            })
-        else:
-            text_parts.append(f"[第{page_num + 1}页]\n{text.strip()}")
-            pages.append({
-                "page_num": page_num + 1,
-                "text": text.strip(),
-                "is_scan": False
-            })
-
-    doc.close()
-    
-    # 调用豆包解析
-    parsed = await call_doubao(text_parts, image_parts)
-    
-    # 更新扫描页的text字段
-    if parsed:
-        for i, page_num in enumerate(image_page_nums):
-            pages[page_num - 1]["text"] = f"[扫描页，已由AI解析]"
-    
-    return pages, parsed
-
-
-async def process_image(image_bytes: bytes, filename: str) -> tuple[list, dict]:
-    """处理图片文件"""
-    pages = [{
-        "page_num": 1,
-        "text": "",
-        "is_scan": True,
-        "ocr_used": True
-    }]
-    
-    parsed = await call_doubao([], [image_bytes])
-    return pages, parsed
-
+app.add_middleware(ParseRequestTimingMiddleware)
 
 @app.post("/parse")
-async def parse_file(file: UploadFile = File(...)) -> Dict:
-    filename = file.filename or ""
-    file_bytes = await file.read()
+async def parse_file(
+    request: Request,
+    files: list[UploadFile] | None = File(None),
+    file: UploadFile | None = File(None),
+) -> Dict[str, Any]:
+    backend_started = time.perf_counter()
+    request.state.parse_handler_started = backend_started
+    run_id = request.state.parse_run_id
+    try:
+        active_profile = get_active_model_profile()
+    except ValueError as exc:
+        logger.error("[parse:%s] model_configuration_failed reason=%s", run_id, exc)
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    logger.info("[parse:%s] model_profile=%s model=%s", run_id, active_profile["profile"], active_profile["model"])
+    timings = {
+        "uploadReadMs": 0,
+        "inputValidationMs": 0,
+        "preprocessMs": 0,
+        "primaryModelMs": 0,
+        "validationMs": 0,
+        "verificationModelMs": 0,
+        "postprocessMs": 0,
+        "backendTotalMs": 0,
+    }
 
+    incoming = list(files or [])
+    if file is not None:
+        incoming.append(file)
+    if not incoming:
+        raise HTTPException(status_code=400, detail="请上传一个PDF或至少一张图片")
+
+    upload_read_started = time.perf_counter()
     image_extensions = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
-    ext = os.path.splitext(filename)[1].lower()
+    uploads: list[tuple[str, bytes]] = []
+    for index, upload in enumerate(incoming, start=1):
+        uploads.append((upload.filename or f"page-{index}", await upload.read()))
+    timings["uploadReadMs"] = _log_step(
+        run_id, "upload_read", upload_read_started,
+        files=len(uploads), bytes=sum(len(content) for _, content in uploads),
+    )
 
-    if ext in image_extensions:
-        pages, parsed = await process_image(file_bytes, filename)
-    else:
-        pages, parsed = await process_pdf(file_bytes)
+    input_validation_started = time.perf_counter()
+    extensions = [Path(name).suffix.lower() for name, _ in uploads]
+    is_single_pdf = len(uploads) == 1 and extensions[0] == ".pdf"
+    is_image_batch = bool(uploads) and all(extension in image_extensions for extension in extensions)
+    if not is_single_pdf and not is_image_batch:
+        raise HTTPException(
+            status_code=400,
+            detail="一次只能上传一个PDF，或一组属于同一篇阅读的图片；不能混合上传",
+        )
+    if is_image_batch and len(uploads) > MAX_PAGES:
+        raise HTTPException(status_code=400, detail=f"一次最多上传{MAX_PAGES}张图片")
+    timings["inputValidationMs"] = _log_step(
+        run_id, "input_validation", input_validation_started,
+        format="pdf" if is_single_pdf else "images", files=len(uploads),
+    )
 
-    print(f"Parsed result: {parsed}")
-    if not parsed:
-        return {
-            "pages": pages,
-            "total_pages": len(pages),
-            "article": "",
-            "questions": [],
-            "questions_raw": "",
-            "answers": {},
-            "explanations": {},
-            "error": "解析失败，请重试"
+    preprocess_started = time.perf_counter()
+    try:
+        if is_single_pdf:
+            pages, page_images, native_evidence = process_pdf_bytes(uploads[0][1], run_id)
+        else:
+            pages, page_images, native_evidence = process_image_bytes(uploads)
+    except Exception as exc:
+        _log_step(run_id, "preprocess_failed", preprocess_started, error_type=type(exc).__name__)
+        raise
+    timings["preprocessMs"] = _log_step(
+        run_id, "preprocess", preprocess_started,
+        pages=len(pages), image_bytes=sum(len(image) for image in page_images),
+    )
+
+    primary_started = time.perf_counter()
+    logger.info("[parse:%s] step=primary_model_started pages=%s", run_id, len(page_images))
+    try:
+        primary, raw_primary, primary_ms = await call_active_model(
+            active_profile,
+            PARSE_PROMPT,
+            page_images,
+        )
+    except Exception as exc:
+        _log_step(run_id, "primary_model_failed", primary_started, error_type=type(exc).__name__)
+        raise
+    timings["primaryModelMs"] = primary_ms
+    _log_step(run_id, "primary_model", primary_started, output_chars=len(raw_primary))
+
+    postprocess_started = time.perf_counter()
+    normalized = normalize_parsed_output(primary)
+    timings["postprocessMs"] += _log_step(
+        run_id, "primary_normalize", postprocess_started,
+        article_blocks=len(normalized.get("articleBlocks", [])), questions=len(normalized.get("questions", [])),
+    )
+
+    validation_started = time.perf_counter()
+    report = validate_parsed_output(normalized, native_evidence)
+    timings["validationMs"] += _log_step(
+        run_id, "primary_validation", validation_started,
+        status=report["status"], errors=len(report["errors"]), warnings=len(report["warnings"]),
+    )
+    initial_validation_errors = list(report["errors"])
+    retry_count = 0
+    raw_verification = ""
+    verification_pages: list[int] = []
+
+    if initial_validation_errors:
+        for index, error in enumerate(initial_validation_errors, start=1):
+            logger.warning("[parse:%s] initial_validation_error[%s]=%s", run_id, index, error)
+        retry_count = 1
+        repair_planning_started = time.perf_counter()
+        repair_indices, repair_fields = _repair_scope(normalized, initial_validation_errors, native_evidence)
+        verification_pages = [index + 1 for index in repair_indices]
+        repair_prompt = _repair_prompt(normalized, report, repair_fields)
+        _log_step(
+            run_id, "repair_planning", repair_planning_started,
+            pages=verification_pages, fields=repair_fields,
+        )
+        verification_started = time.perf_counter()
+        logger.info("[parse:%s] step=verification_model_started pages=%s", run_id, verification_pages)
+        try:
+            repaired, raw_verification, verification_ms = await call_active_model(
+                active_profile,
+                repair_prompt,
+                [page_images[index] for index in repair_indices],
+                verification_pages,
+            )
+        except Exception as exc:
+            _log_step(run_id, "verification_model_failed", verification_started, error_type=type(exc).__name__)
+            raise
+        timings["verificationModelMs"] = verification_ms
+        _log_step(run_id, "verification_model", verification_started, output_chars=len(raw_verification))
+        postprocess_started = time.perf_counter()
+        repaired_normalized = normalize_parsed_output(_merge_repair(normalized, repaired, repair_fields))
+        timings["postprocessMs"] += _log_step(run_id, "repair_merge_normalize", postprocess_started)
+        validation_started = time.perf_counter()
+        repaired_report = validate_parsed_output(repaired_normalized, native_evidence)
+        timings["validationMs"] += _log_step(
+            run_id, "verification_validation", validation_started,
+            status=repaired_report["status"], errors=len(repaired_report["errors"]),
+            warnings=len(repaired_report["warnings"]),
+        )
+        if len(repaired_report["errors"]) < len(report["errors"]):
+            normalized = repaired_normalized
+            report = repaired_report
+            logger.info("[parse:%s] repair_result=accepted", run_id)
+        else:
+            logger.warning("[parse:%s] repair_result=rejected reason=errors_not_reduced", run_id)
+
+    report["initialErrors"] = initial_validation_errors
+    report["verificationPages"] = verification_pages
+    for index, warning in enumerate(report["warnings"], start=1):
+        logger.warning("[parse:%s] final_validation_warning[%s]=%s", run_id, index, warning)
+    for index, error in enumerate(report["errors"], start=1):
+        logger.error("[parse:%s] final_validation_error[%s]=%s", run_id, index, error)
+
+    response_build_started = time.perf_counter()
+    if report["errors"]:
+        file_hash = _hash_uploads(uploads)
+        failure_detail = {
+            "message": "文件解析结果未通过完整性验收",
+            "runId": run_id,
+            "validation": report,
+            "timing": timings,
+            "answerStatus": normalized.get("answerStatus", "uncertain"),
+            "pageCount": len(pages),
+            "questionCount": len(normalized.get("questions", [])),
+            "normalizedOutput": normalized,
+            "parseMeta": {
+                "runId": run_id,
+                "fileHash": file_hash,
+                "profile": active_profile["profile"],
+                "provider": active_profile["provider"],
+                "protocol": active_profile["protocol"],
+                "model": active_profile["model"],
+                "parserVersion": PARSER_VERSION,
+                "promptVersion": PROMPT_VERSION,
+                "retryCount": retry_count,
+                "initialValidationErrors": initial_validation_errors,
+                "verificationPages": verification_pages,
+                "rawModelOutput": {
+                    "primary": raw_primary,
+                    "verification": raw_verification or None,
+                },
+            },
         }
+        timings["responseBuildMs"] = _log_step(run_id, "failure_response_build", response_build_started)
+        timings["backendTotalMs"] = _now_ms(backend_started)
+        logger.info(
+            "[parse:%s] handler_complete status=422 pages=%s questions=%s retry=%s timings=%s",
+            run_id, len(pages), len(normalized.get("questions", [])), retry_count,
+            json.dumps(timings, ensure_ascii=False),
+        )
+        request.state.parse_handler_finished = time.perf_counter()
+        raise HTTPException(status_code=422, detail=failure_detail)
 
-    return {
+    title_value = normalized.get("title")
+    title = title_value.strip() if isinstance(title_value, str) else ""
+    if not title:
+        title = Path(uploads[0][0]).stem or "阅读材料"
+
+    result = {
         "pages": pages,
         "total_pages": len(pages),
-        "article": parsed.get("article", ""),
-        "questions": parsed.get("questions", []),
+        "title": title,
+        "article": normalized.get("article", ""),
+        "articleBlocks": normalized.get("articleBlocks", []),
+        "questions": normalized.get("questions", []),
         "questions_raw": "",
-        "answers": parsed.get("answers", {}),
-        "locations": parsed.get("locations", {}),
-        "explanations": parsed.get("explanations", {})
+        "answerStatus": normalized.get("answerStatus", "none"),
+        "answerSource": normalized.get("answerSource", "none"),
+        "analysisStatus": normalized.get("analysisStatus", "none"),
+        "analysisSource": normalized.get("analysisSource", "none"),
+        "answers": normalized.get("answers", {}),
+        "answerEvidence": normalized.get("answerEvidence", {}),
+        "locations": normalized.get("locations", {}),
+        "explanations": normalized.get("explanations", {}),
+        "parseMeta": {
+            "runId": run_id,
+            "fileHash": _hash_uploads(uploads),
+            "profile": active_profile["profile"],
+            "provider": active_profile["provider"],
+            "protocol": active_profile["protocol"],
+            "model": active_profile["model"],
+            "parserVersion": PARSER_VERSION,
+            "promptVersion": PROMPT_VERSION,
+            "retryCount": retry_count,
+            "initialValidationErrors": initial_validation_errors,
+            "verificationPages": verification_pages,
+            "timing": timings,
+            "validation": report,
+            "rawModelOutput": {
+                "primary": raw_primary,
+                "verification": raw_verification or None,
+            },
+        },
     }
+    timings["responseBuildMs"] = _log_step(run_id, "success_response_build", response_build_started)
+    timings["backendTotalMs"] = _now_ms(backend_started)
+    logger.info(
+        "[parse:%s] handler_complete status=200 pages=%s questions=%s retry=%s validation=%s timings=%s",
+        run_id, len(pages), len(normalized.get("questions", [])), retry_count, report["status"],
+        json.dumps(timings, ensure_ascii=False),
+    )
+    request.state.parse_handler_finished = time.perf_counter()
+    return result
 
 
 @app.get("/")
-async def root():
-    return {"message": "PDF Parser API is running"}
+async def root() -> dict[str, Any]:
+    try:
+        profile = get_active_model_profile()
+        model_status: dict[str, Any] = {
+            "configured": True,
+            "profile": profile["profile"],
+            "provider": profile["provider"],
+            "protocol": profile["protocol"],
+            "model": profile["model"],
+        }
+    except ValueError as exc:
+        model_status = {
+            "configured": False,
+            "profile": PARSER_PROFILE,
+            "error": str(exc),
+        }
+    return {
+        "message": "IELTS parser API is running",
+        "parserVersion": PARSER_VERSION,
+        "promptVersion": PROMPT_VERSION,
+        "activeModel": model_status,
+    }

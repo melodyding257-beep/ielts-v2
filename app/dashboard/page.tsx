@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import UploadSection from '@/components/dashboard/UploadSection'
-import FileList from '@/components/dashboard/FileList'
+import Link from 'next/link'
+import DashboardContent from '@/components/dashboard/DashboardContent'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -21,6 +21,9 @@ export default async function DashboardPage() {
             IELTS Reading Practice · 雅思阅读机考平台
           </h1>
           <div className="flex items-center gap-4">
+            <Link href="/admin/parse-tests" className="text-sm text-gray-600 underline underline-offset-4 hover:text-black">
+              解析测试对比
+            </Link>
             <div className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center">
                 <span className="text-sm font-medium">
@@ -51,14 +54,7 @@ export default async function DashboardPage() {
           <p className="text-gray-600">上传 PDF 或图片文件开始练习</p>
         </div>
 
-        {/* 上传区域 */}
-        <UploadSection />
-
-        {/* 已上传文件列表 */}
-        <div className="mt-12">
-          <h3 className="text-xl font-semibold mb-4">我的文件</h3>
-          <FileList />
-        </div>
+        <DashboardContent />
       </main>
     </div>
   )
